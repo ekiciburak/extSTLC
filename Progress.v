@@ -86,22 +86,51 @@ Definition typecheck_op (t: term) :=
   end.
 
 
+(* Lemma progress: forall t,
+  istypechecked nil t  = true ->
+  (isvalue t = true) \/ (exists t', term_eqbO (beta t) (Some t') = true).
+Proof. intros t Htc.
+       induction t; intros.
+       - right. cbn in *. easy.
+       - cbn. now left.
+       - right.
+         assert (Htt1: istypechecked nil t1 = true).
+         { apply istypechecked_t1 in Htc. easy. }
+         specialize (IHt1 Htt1).
+         assert (Htt2: istypechecked nil t2 = true).
+         { apply istypechecked_t2 in Htc. easy. }
+         specialize (IHt2 Htt2).
+         destruct IHt1 as [ IHt1 | IHt1 ].
+         + destruct IHt2 as [ IHt2 | IHt2 ].
+           ++ case_eq t1; intros.
+              * subst. easy.
+              * cbn. rewrite IHt2. exists ((subst t0 s t2)).
+                now rewrite term_eqbO_refl.
+              * subst. cbn in *. easy.
+              * cbn. rewrite H in Htc. cbn in Htc. easy.
+              * cbn. rewrite H in Htc. cbn in Htc. easy.
+              * subst. cbn in *. easy.
+              * subst. cbn in *. easy.
+              * subst. cbn in *. easy.
+              * subst. cbn in *. easy.
+              * subst. cbn in *. easy.
+              * subst. cbn in *. easy.
+              * subst. cbn in *. easy.
+           ++ *)
+
+
 
 Lemma progress: forall t,
   istypechecked nil t  = true ->
   (isvalue t = true) \/ (exists t', term_eqbO (beta t) (Some t') = true).
 Proof. intros t Htc.
        induction t; intros.
-       - right. exists (Ident s). cbn in *. easy.
+       - right. cbn in *. easy.
        - cbn. now left.
        - right.
          specialize (isvalue_dec t1); intros it1.
          destruct it1 as [it1 | it1].
-         + assert (Htt2: istypechecked nil t2 = true).
-           { apply istypechecked_t2 in Htc. easy. }
-           specialize (IHt2 Htt2).
-(*            destruct IHt2 as [it2 | et2]. *)
-           specialize (isvalue_dec t2) as [it2 | it2].
+         + specialize (isvalue_dec t2) as [it2 | it2].
            ++ case_eq t1; intros.
               * subst. easy.
               * cbn. rewrite it2. exists ((subst t0 s t2)).
@@ -116,123 +145,107 @@ Proof. intros t Htc.
               * subst. cbn in *. easy.
               * subst. cbn in *. easy.
               * subst. cbn in *. easy.
-           ++ destruct IHt2 as [it2' | Hstep].
-              rewrite it2 in it2'. easy.
-              destruct Hstep as (t', Hstep).
-              exists (App t1 t'). cbn.
-              case_eq t1; intros.
-              * subst. easy.
-              * rewrite it2.
-                case_eq (beta t2 ); intros. cbn in *.
-                rewrite type_eqb_refl.
-                rewrite String.eqb_refl.
-                rewrite H0 in Hstep.
-                inversion Hstep.
-                rewrite H2.
-                now rewrite term_eqb_refl.
-                rewrite H0 in Hstep. cbn in *. easy.
-              * subst. easy.
-              * cbn.
-                case_eq (beta t2 ); intros. cbn in *.
-                rewrite H0 in Hstep.
-                inversion Hstep.
-                rewrite nat_eqb_refl.  easy.
-                rewrite H0 in *. cbn in  *. easy.
-              * cbn in *. subst. cbn in *. easy.
-              * subst. cbn in *. easy.
-              * subst. cbn in *. easy.
-              * subst. cbn in *. easy.
-              * subst. cbn in *. easy.
-              * subst. cbn in *. easy.
-              * subst. cbn in *. easy.
-              * subst. cbn in *. easy.
+           ++ assert (Htt2: istypechecked nil t2 = true).
+              { apply istypechecked_t2 in Htc. easy. }
+              specialize (IHt2 Htt2).
+              destruct IHt2 as [it2' | Hstep].
+              +++ rewrite it2 in it2'. easy.
+              +++ destruct Hstep as (t', Hstep).
+                  exists (App t1 t'). cbn.
+                  case_eq t1; intros.
+                  * subst. easy.
+                  * rewrite it2.
+                    case_eq (beta t2 ); intros. cbn in *.
+                    rewrite type_eqb_refl.
+                    rewrite String.eqb_refl.
+                    rewrite H0 in Hstep.
+                    inversion Hstep.
+                    rewrite H2.
+                    now rewrite term_eqb_refl.
+                    rewrite H0 in Hstep. cbn in *. easy.
+                 * subst. easy.
+                 * cbn. subst. easy.
+                 * cbn. subst. easy.
+                 * subst. cbn in *. easy.
+                 * subst. cbn in *. easy.
+                 * subst. cbn in *. easy.
+                 * subst. cbn in *. easy.
+                 * subst. cbn in *. easy.
+                 * subst. cbn in *. easy.
+                 * subst. cbn in *. easy.
          + assert (Htt1: istypechecked nil t1 = true).
            { apply istypechecked_t1 in Htc. easy. }
            specialize (IHt1 Htt1).
            destruct IHt1 as [IHt1 | IHt1].
-           rewrite it1 in IHt1. easy.
-           destruct IHt1 as (t', Hstep). 
-           exists (App t' t2). cbn.
-           case_eq t1; intros.
-           * subst. cbn in *. inversion Hstep.
-           * subst. cbn in *. easy.
-           * subst. rewrite it1. 
-             case_eq (beta (App t t0)); intros.
-             rewrite H in *. inversion Hstep.
-             cbn. rewrite H1, term_eqb_refl. easy.
-             rewrite H in Hstep. cbn in Hstep. easy.
-           * subst. easy.
-           * subst. cbn in *. easy.
-           * subst. cbn in *.
-             case_eq (match t with
-                         | BVal true => Some t0
-                         | BVal false => Some t3
-                         | _ => match beta t with
-                                  | Some e1'' => Some (ITE e1'' t0 t3)
-                                  | None => None
-                                end
-                      end); intros. rewrite H in Hstep.
-            apply term_eqbO_eq in Hstep.
-            inversion Hstep.
-            rewrite term_eqbO_refl. easy.
-            rewrite H in Hstep. easy.
-           * subst. cbn in *.
-             apply term_eqbO_eq in Hstep. rewrite Hstep.
-             rewrite term_eqbO_refl. easy.
-           * subst. rewrite it1.
-             apply term_eqbO_eq in Hstep.
-             rewrite Hstep.
-             rewrite term_eqbO_refl. easy.
-           * subst. rewrite it1.
-             apply term_eqbO_eq in Hstep.
-             rewrite Hstep.
-             rewrite term_eqbO_refl. easy.
-           * subst. rewrite it1.
-             apply term_eqbO_eq in Hstep.
-             rewrite Hstep.
-             rewrite term_eqbO_refl. easy.
-           * subst. rewrite it1.
-             apply term_eqbO_eq in Hstep.
-             rewrite Hstep.
-             rewrite term_eqbO_refl. easy.
-           * subst. rewrite it1.
-             apply term_eqbO_eq in Hstep.
-             rewrite Hstep.
-             rewrite term_eqbO_refl. easy.
+           ++ rewrite it1 in IHt1. easy.
+           ++ destruct IHt1 as (t', Hstep). 
+              exists (App t' t2). cbn.
+              case_eq t1; intros.
+              * subst. cbn in *. inversion Hstep.
+              * subst. cbn in *. easy.
+              * subst. rewrite it1.
+                apply term_eqbO_eq in Hstep.
+                rewrite Hstep.
+                rewrite term_eqbO_refl. easy.
+              * subst. easy.
+              * subst. cbn in *. easy.
+              * subst. cbn in *.
+                case_eq (match t with
+                            | BVal true => Some t0
+                            | BVal false => Some t3
+                            | _ => match beta t with
+                                     | Some e1'' => Some (ITE e1'' t0 t3)
+                                     | None => None
+                                   end
+                         end); intros. rewrite H in Hstep.
+               apply term_eqbO_eq in Hstep.
+               inversion Hstep.
+               rewrite term_eqbO_refl. easy.
+               rewrite H in Hstep. easy.
+              * subst. cbn in *.
+                apply term_eqbO_eq in Hstep. rewrite Hstep.
+                rewrite term_eqbO_refl. easy.
+              * subst. rewrite it1.
+                apply term_eqbO_eq in Hstep.
+                rewrite Hstep.
+                rewrite term_eqbO_refl. easy.
+              * subst. rewrite it1.
+                apply term_eqbO_eq in Hstep.
+                rewrite Hstep.
+                rewrite term_eqbO_refl. easy.
+              * subst. rewrite it1.
+                apply term_eqbO_eq in Hstep.
+                rewrite Hstep.
+                rewrite term_eqbO_refl. easy.
+              * subst. rewrite it1.
+                apply term_eqbO_eq in Hstep.
+                rewrite Hstep.
+                rewrite term_eqbO_refl. easy.
+              * subst. rewrite it1.
+                apply term_eqbO_eq in Hstep.
+                rewrite Hstep.
+                rewrite term_eqbO_refl. easy.
        - cbn. now left.
        - cbn. now left.
        - right.
-         unfold istypechecked in *. cbn in Htc.
-         case_eq (typecheck nil t1 ); intros.
-         rewrite H in Htc.
-         case_eq (typecheck nil t2 ); intros.
-         rewrite H0 in Htc.
-         case_eq (typecheck nil t3 ); intros.
-         rewrite H1 in Htc.
-         case_eq ((if type_eqb t Bool && type_eqb t0 t4 then Some t0 else None)); intros.
-         rewrite H2 in Htc.
-         case_eq (type_eqb t Bool && type_eqb t0 t4 ); intros.
-         rewrite H3 in H2. unfold andb in H3.
-         case_eq (type_eqb t Bool); intros.
-         rewrite H4 in H3.
-         rewrite H0 in IHt2.
-         specialize (IHt2 eq_refl).
-         rewrite H1 in IHt3.
-         specialize (IHt3 eq_refl).
-         rewrite H in IHt1.
+         unfold istypechecked in Htc.
+         case_eq (typecheck nil (ITE t1 t2 t3)). intros t Htca.
+         apply istypechecked_ite2 in Htca.
+         destruct Htca as (Ha, (Hb, Hc)).
+         unfold istypechecked in IHt1, IHt2, IHt3.
+         rewrite Ha in IHt1.
+         rewrite Hb in IHt2.
+         rewrite Hc in IHt3.
          specialize (IHt1 eq_refl).
+         specialize (IHt2 eq_refl).
+         specialize (IHt3 eq_refl).
          destruct IHt1 as [t1'| Hstep].
          case_eq t1; intros.
          + subst. easy.
-         + subst. cbn.
-           apply type_eqb_eq in H4.
-           subst. contradict H.
-           cbn. case_eq (typecheck (extend nil s t6) t7); intros.
-           easy. easy.
+         + subst. contradict Ha. cbn.
+           case_eq (typecheck (extend nil s t0) t4); easy.
          + subst. easy.
-         + subst. apply type_eqb_eq in H4.
-           subst. contradict H.
-           cbn. easy.
+         + subst. cbn in Ha.  easy.
          + cbn. case_eq b; intros.
            exists t2. rewrite term_eqbO_refl. easy.
            exists t3. rewrite term_eqbO_refl. easy.
@@ -243,20 +256,16 @@ Proof. intros t Htc.
          + subst. cbn in *. easy.
          + subst. cbn in *. easy.
          + subst. cbn in *. easy.
-         + subst. cbn in *.
+         + subst.
            destruct Hstep as (T, Hstep).
            apply term_eqbO_eq in Hstep.
+           cbn.
            rewrite Hstep.
            case_eq t1; intros; try (exists ((ITE T t2 t3)); rewrite term_eqbO_refl; easy).
            case_eq b; intros.
            exists t2. rewrite term_eqbO_refl; easy.
            exists t3. rewrite term_eqbO_refl; easy.
-         + rewrite H4 in H3. easy.
-         + rewrite H3 in H2. easy.
-         + rewrite H2 in Htc. easy.
-         + rewrite H1 in Htc. easy.
-         + rewrite H0 in Htc. easy.
-         + rewrite H in Htc. easy.
+         + intros. rewrite H in Htc. easy.
        - pose proof Htc as Htc0.
          apply istypechecked_st in Htc.
          specialize (IHt Htc).
@@ -276,179 +285,45 @@ Proof. intros t Htc.
            * exists ((subst t0 s (Fix (Lambda s t t0)))).
              rewrite term_eqbO_refl. easy.
        - pose proof Htc as Htc0.
-         right.
-         apply istypechecked_plus in Htc.
-         destruct Htc as (H1, H2).
-         specialize (IHt1 H1).
-         specialize (IHt2 H2).
-         destruct IHt1 as [ IHt1 | IHt1 ];
-         destruct IHt2 as [ IHt2 | IHt2 ].
-         pose proof IHt1 as HH1.
-         pose proof IHt2 as HH2.
-         + apply isvalue_beta in IHt1.
+         specialize (isvalue_dec t1); intros it1.
+         + right.
+           apply istypechecked_plus2 in Htc0.
+           destruct Htc0 as (Ha, Hb).
+           unfold istypechecked in IHt1, IHt2.
+           rewrite Ha in IHt1.
+           rewrite Hb in IHt2.
+           specialize (IHt1 eq_refl).
+           specialize (IHt2 eq_refl).
            cbn.
-           rewrite IHt1.
-           rewrite HH1.
-           apply isvalue_beta in IHt2.
-           rewrite IHt2.
-           case_eq t1; intros; rewrite H in HH1; try easy.
-           ++ subst. unfold istypechecked in Htc0, H1.
-              case_eq (typecheck nil (Plus (Lambda s t t0) t2)); intros.
-              +++ cbn in H. cbn in H1.
-                  case_eq (typecheck (extend nil s t) t0); intros.
-                  ++++ rewrite H0 in *. easy.
-                  ++++ rewrite H0 in *. easy.
-              +++ rewrite H in Htc0. easy.
-           ++ case_eq t2; intros; rewrite H0 in HH2; try easy.
-              +++ subst. unfold istypechecked in Htc0, H2.
-                  cbn in Htc0, H2.
-                  case_eq (typecheck (extend nil s t) t0); intros.
-                  ++++ rewrite H in *. easy.
-                  ++++ rewrite H in *. easy.
-              +++ exists (NVal (n + n0)). 
-                  rewrite term_eqbO_refl. easy.
-                  +++ subst. unfold istypechecked in *.
-                      cbn in *. easy.
-           ++ subst. unfold istypechecked in *.
-              cbn in *. easy.
-         + cbn. rewrite IHt1.
-           destruct IHt2 as (t, IHt2).
-           apply term_eqbO_eq in IHt2.
-           rewrite IHt2.
-           exists (Plus t1 t); destruct t1; try rewrite term_eqbO_refl; try easy.
-           destruct t2; try (rewrite term_eqbO_refl; easy). cbn in *. easy.
-         + case_eq t2; intros.
-           ++ subst. cbn in *. easy.
-           ++ subst. cbn in *.
-              unfold istypechecked in *.
-              cbn in *.
-              case_eq (typecheck (extend nil s t) t0); intros.
-              +++ rewrite H in *.
-                  case_eq (typecheck nil t1); intros.
-                  ++++ rewrite H0 in *.
-                       destruct t3; easy.
-                  ++++ rewrite H0 in *. easy.
-              +++ rewrite H in *. easy.
-           ++ subst. cbn in *. easy.
-           ++ subst. cbn in *.
-              destruct IHt1 as (t, IHt1).
-              apply term_eqbO_eq in IHt1.
-              rewrite IHt1.
-              destruct t1.
-              +++ cbn in *. easy. 
-              +++ cbn in *. easy. 
-              +++ assert (isvalue (App t1_1 t1_2) = false) by easy.
-                  rewrite H. exists (Plus t (NVal n)).
-                  rewrite term_eqbO_refl. easy.
-              +++ cbn in *. easy. 
-              +++ cbn in *. easy. 
-              +++ assert (isvalue (ITE t1_1 t1_2 t1_3) = false) by easy.
-                  rewrite H. exists (Plus t (NVal n)).
-                  rewrite term_eqbO_refl. easy.
-              +++ assert (isvalue (Fix t1) = false) by easy.
-                  rewrite H. exists (Plus t (NVal n)).
-                  rewrite term_eqbO_refl. easy.
-              +++ assert (isvalue (Plus t1_1 t1_2) = false) by easy.
-                  rewrite H. exists (Plus t (NVal n)).
-                  rewrite term_eqbO_refl. easy.
-              +++ assert (isvalue (Minus t1_1 t1_2) = false) by easy.
-                  rewrite H. exists (Plus t (NVal n)).
-                  rewrite term_eqbO_refl. easy.
-              +++ assert (isvalue (Mult t1_1 t1_2) = false) by easy.
-                  rewrite H. exists (Plus t (NVal n)).
-                  rewrite term_eqbO_refl. easy.
-              +++ assert (isvalue (Eq t1_1 t1_2) = false) by easy.
-                  rewrite H. exists (Plus t (NVal n)).
-                  rewrite term_eqbO_refl. easy.
-              +++ assert (isvalue (Gt t1_1 t1_2) = false) by easy.
-                  rewrite H. exists (Plus t (NVal n)).
-                  rewrite term_eqbO_refl. easy.
-           ++ subst. unfold istypechecked in H1, Htc0. cbn in Htc0.
-              case_eq (typecheck nil t1); intros.
-              +++ rewrite H in *. destruct t; easy.
-              +++ rewrite H in *. easy.
-           ++ subst. cbn in IHt2. easy. 
-           ++ subst. cbn in IHt2. easy. 
-           ++ subst. cbn in IHt2. easy. 
-           ++ subst. cbn in IHt2. easy. 
-           ++ subst. cbn in IHt2. easy. 
-           ++ subst. cbn in IHt2. easy. 
-           ++ subst. cbn in IHt2. easy.
-         + destruct IHt1 as (ta, IHt1).
-           destruct IHt2 as (tb, IHt2).
-           apply term_eqbO_eq in IHt1.
-           apply term_eqbO_eq in IHt2.
-           cbn. rewrite IHt1, IHt2.
-           destruct t1.
-           ++ assert (isvalue (Ident s) = false) by easy.
-              rewrite H.
-              exists (Plus ta t2). rewrite term_eqbO_refl. easy.
-           ++ assert (isvalue (Lambda s t t1) = true) by easy.
-              rewrite H.
-              exists ((Plus (Lambda s t t1) tb)). rewrite term_eqbO_refl. easy.
-           ++ assert (isvalue (App t1_1 t1_2) = false) by easy.
-              rewrite H.
-              exists (Plus ta t2). rewrite term_eqbO_refl. easy.
-           ++ destruct t2.
-              +++ assert (isvalue (NVal n) = true) by easy.
-                  rewrite H. exists (Plus (NVal n) tb).
-                  rewrite term_eqbO_refl. easy.
-              +++ assert (isvalue (NVal n) = true) by easy.
-                  rewrite H. exists (Plus (NVal n) tb).
-                  rewrite term_eqbO_refl. easy.
-              +++ assert (isvalue (NVal n) = true) by easy.
-                  rewrite H. exists (Plus (NVal n) tb).
-                  rewrite term_eqbO_refl. easy.
-              +++ exists (NVal (n + n0)).
-                  rewrite term_eqbO_refl. easy.
-              +++ assert (isvalue (NVal n) = true) by easy.
-                  rewrite H. exists (Plus (NVal n) tb).
-                  rewrite term_eqbO_refl. easy.
-              +++ assert (isvalue (NVal n) = true) by easy.
-                  rewrite H. exists (Plus (NVal n) tb).
-                  rewrite term_eqbO_refl. easy.
-              +++ assert (isvalue (NVal n) = true) by easy.
-                  rewrite H. exists (Plus (NVal n) tb).
-                  rewrite term_eqbO_refl. easy.
-              +++ assert (isvalue (NVal n) = true) by easy.
-                  rewrite H. exists (Plus (NVal n) tb).
-                  rewrite term_eqbO_refl. easy.
-              +++ assert (isvalue (NVal n) = true) by easy.
-                  rewrite H. exists (Plus (NVal n) tb).
-                  rewrite term_eqbO_refl. easy.
-              +++ assert (isvalue (NVal n) = true) by easy.
-                  rewrite H. exists (Plus (NVal n) tb).
-                  rewrite term_eqbO_refl. easy.
-              +++ assert (isvalue (NVal n) = true) by easy.
-                  rewrite H. exists (Plus (NVal n) tb).
-                  rewrite term_eqbO_refl. easy.
-              +++ assert (isvalue (NVal n) = true) by easy.
-                  rewrite H. exists (Plus (NVal n) tb).
-                  rewrite term_eqbO_refl. easy.
-           ++ assert (isvalue (BVal b) = true) by easy.
-              rewrite H.
-              exists (Plus (BVal b) tb). rewrite term_eqbO_refl. easy.
-           ++ assert (isvalue (ITE t1_1 t1_2 t1_3) = false) by easy.
-              rewrite H.
-              exists (Plus ta t2). rewrite term_eqbO_refl. easy.
-           ++ assert (isvalue (Fix t1) = false) by easy.
-              rewrite H.
-              exists (Plus ta t2). rewrite term_eqbO_refl. easy.
-           ++ assert (isvalue (Plus t1_1 t1_2) = false) by easy.
-              rewrite H.
-              exists (Plus ta t2). rewrite term_eqbO_refl. easy.
-           ++ assert (isvalue (Minus t1_1 t1_2) = false) by easy.
-              rewrite H.
-              exists (Plus ta t2). rewrite term_eqbO_refl. easy.
-           ++ assert (isvalue (Mult t1_1 t1_2) = false) by easy.
-              rewrite H.
-              exists (Plus ta t2). rewrite term_eqbO_refl. easy.
-           ++ assert (isvalue (Eq t1_1 t1_2) = false) by easy.
-              rewrite H.
-              exists (Plus ta t2). rewrite term_eqbO_refl. easy.
-           ++ assert (isvalue (Gt t1_1 t1_2) = false) by easy.
-              rewrite H.
-              exists (Plus ta t2). rewrite term_eqbO_refl. easy.
+           destruct it1 as [it1 | it1];
+           pose proof it1 as it1'.
+           ++ case_eq t1; intros; rewrite H in it1; cbn in it1; try easy.
+              +++ rewrite H in Ha. cbn in Ha.
+                  case_eq (typecheck (extend nil s t) t0); intros;
+                  rewrite H0 in Ha; easy.
+              +++ destruct IHt2 as [IHt2 | IHt2].
+                  case_eq t2; intros; try (rewrite H0 in IHt2; cbn in IHt2; easy).
+                  * rewrite H0 in Hb. cbn in Hb.
+                    case_eq (typecheck (extend nil s t) t0); intros;
+                    rewrite H1 in Hb; easy.
+                  * exists (NVal (n + n0)).
+                    rewrite term_eqbO_refl. easy.
+                  * rewrite H0 in Hb. easy.
+                  * destruct IHt2 as (t, Hstep).
+                    apply term_eqbO_eq in Hstep.
+                    rewrite Hstep. cbn.
+                    case_eq t2; try (exists (Plus (NVal n) t); rewrite term_eqbO_refl; easy).
+                    intros m H1.
+                    rewrite H1 in Hstep. cbn in Hstep. easy.
+              +++ cbn. rewrite H in Ha. easy.
+           ++ destruct IHt1 as [IHt1 | IHt1].
+              rewrite it1 in IHt1. easy.
+              destruct IHt1 as (t, Hstep).
+              apply term_eqbO_eq in Hstep.
+              rewrite Hstep, it1.
+              case_eq t1; try (exists (Plus t t2); rewrite term_eqbO_refl; easy).
+              intros n H0.
+              subst. easy.
        - pose proof Htc as Htc0.
          right.
          apply istypechecked_minus in Htc.

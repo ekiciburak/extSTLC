@@ -487,6 +487,42 @@ Proof. intros t1 t2.
          destruct t3; intros; easy. easy.
 Qed.
 
+
+Lemma istypechecked_ite1: forall (t1 t2 t3: term), istypechecked nil (ITE t1 t2 t3) = true ->
+  istypechecked nil t1 = true /\ istypechecked nil t2 = true /\ istypechecked nil t3 = true.
+Proof. intro t1.
+       unfold istypechecked. cbn.
+       case_eq (typecheck nil t1); intros; try easy.
+       split. easy.
+       case_eq (typecheck nil t2); intros.
+       rewrite  H1 in H0.
+       case_eq (typecheck nil t3); intros.
+       split; easy. split. easy.
+       rewrite H2 in H0. easy.
+       rewrite H1 in H0. easy. 
+Qed.
+
+Lemma istypechecked_ite2: forall (t1 t2 t3: term) T, typecheck nil (ITE t1 t2 t3) = Some T ->
+  typecheck nil t1 = Some Bool /\ typecheck nil t2 = Some T /\ typecheck nil t3 = Some T.
+Proof. intro t1.
+       unfold istypechecked. cbn.
+       case_eq (typecheck nil t1); intros; try easy.
+       case_eq (typecheck nil t2); intros.
+       rewrite  H1 in H0.
+       case_eq (typecheck nil t3); intros.
+       rewrite H2 in H0.
+       case_eq (type_eqb t Bool && type_eqb t0 t4); intros.
+       rewrite H3 in H0. inversion H0.
+       apply Bool.andb_true_iff in H3.
+       destruct H3 as (Ha, Hb).
+       apply type_eqb_eq in Ha.
+       apply type_eqb_eq in Hb.
+       subst. split;easy.
+       rewrite H3 in H0. easy.
+       rewrite H2 in H0. easy.
+       rewrite H1 in H0. easy. 
+Qed.
+
 Lemma istypechecked_st: forall (t: term), istypechecked nil (Fix t) = true ->
   istypechecked nil t = true.
 Proof. intro t.
@@ -502,6 +538,19 @@ Proof. intro t.
        split. easy.
        case_eq (typecheck nil t2); intros. easy.
        rewrite  H1 in H0.
+       destruct t0; easy.
+Qed.
+
+
+Lemma istypechecked_plus2: forall (t1 t2: term), istypechecked nil (Plus t1 t2) = true ->
+  typecheck nil t1 = Some Int /\ typecheck nil t2 = Some Int.
+Proof. intro t.
+       unfold istypechecked. cbn.
+       case_eq (typecheck nil t); intros; try easy.
+       case_eq (typecheck nil t2); intros.
+       rewrite  H1 in H0.
+       destruct t0; destruct t1; easy.
+       rewrite H1 in H0. 
        destruct t0; easy.
 Qed.
 
