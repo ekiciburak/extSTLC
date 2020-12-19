@@ -62,6 +62,42 @@ Proof. intro t1.
            intros. inversion H. easy.
 Defined.
 
+
+Definition type_eqbO (t1 t2: option type): bool :=
+  match t1, t2 with
+    | Some t1, Some t2 => type_eqb t1 t2
+    | None, None => true
+    | _, _ => false
+  end.
+
+Lemma type_eqbO_refl: forall (t: option type),
+  type_eqbO t t = true.
+Proof. intro t.
+       induction t; intros.
+       - unfold type_eqbO.
+         rewrite type_eqb_refl.
+         easy.
+       - easy.
+Defined.
+
+Lemma type_eqb0_eq: forall (t1 t2: option type),
+  type_eqbO t1 t2 = true <-> t1 = t2.
+Proof. intro t1.
+       split.
+       revert t2.
+       induction t1; intros.
+       + case_eq t2; intros.
+         subst. simpl in *.
+         apply type_eqb_eq in H. subst. easy.
+         subst. cbn in *. easy.
+       + cbn in *.
+         case_eq t2; intros.
+         subst. easy.
+         easy.
+       + intro H. subst.
+         rewrite type_eqbO_refl. easy.
+Qed.
+
 Inductive term: Type :=
   | Ident : string -> term
   | Lambda: string -> type -> term -> term
@@ -77,7 +113,31 @@ Inductive term: Type :=
   | Gt    : term   -> term -> term.
 
 
-  
+Fixpoint isvalue (t: term): bool :=
+  match t with
+    | Lambda x t e => true
+    | NVal n       => true
+    | BVal b       => true
+    | _            => false
+  end.
+
+Lemma isvalue_dec: forall t: term, isvalue t = true \/ isvalue t = false.
+Proof. intro t.
+       induction t; intros.
+       - cbn. now right.
+       - cbn. now left.
+       - cbn. now right.
+       - cbn. now left.
+       - cbn. now left.
+       - cbn. now right.
+       - cbn. destruct IHt. now right. now right.
+       - cbn. now right.
+       - cbn. now right.
+       - cbn. now right.
+       - cbn. now right.
+       - cbn. now right.
+Qed.
+
 Fixpoint term_eqb (t1 t2: term): bool :=
 match t1, t2 with
   | Ident s, Ident t => if eqb s t then true else false
@@ -213,7 +273,35 @@ Proof. intro t1.
          subst. easy.
 Qed.
 
+Fixpoint term_eqbO (t1 t2: option term): bool :=
+  match t1, t2 with
+    | Some t1, Some t2 => term_eqb t1 t2
+    | None, None => true
+    | _, _ => false
+  end.
 
+Lemma term_eqbO_refl: forall t: option term,
+  term_eqbO t t = true.
+Proof. intros.
+       case_eq t; intros.
+       - cbn. rewrite term_eqb_refl. easy.
+       - easy.
+Defined.
+
+
+Lemma term_eqbO_eq: forall t1 t2: option term,
+  term_eqbO t1 t2 = true -> t1 = t2.
+Proof. intro t1.
+       induction t1; intros.
+       - cbn in H. case_eq t2; intros.
+         + rewrite H0 in H.
+           apply term_eqb_eq in H.
+           subst. easy.
+         + rewrite H0 in H. easy.
+       - cbn in *. case_eq t2; intros.
+         + rewrite H0 in H. easy.
+         + easy.
+Qed.
 
 Fixpoint fv_e (e: term) (l: list string): list string :=
   match e with
@@ -259,13 +347,6 @@ Fixpoint subst (e: term) (x: string) (n: term): term :=
     | _            => e
   end.
 
-
-Lemma bound_var: forall (x: string) (t: term) (T: type),
-  find x (fv (Lambda x T t)) = false.
-Proof. intros x t T.
-       apply In2, In0.
-Qed.
-
 Lemma find0: forall t x s T, 
   find x (fv t) = true -> 
   (s =? x) = false ->
@@ -279,163 +360,6 @@ Proof. intros.
        + easy.
        + rewrite String.eqb_sym. rewrite H0. easy.
 Qed.
-
-(* Lemma find00: forall t x s T f T2, 
-  find x (fv t) = true -> 
-  (s =? x) = false ->
-  (f =? x) = false ->
-  find x (fv (Fix f s T t T2)) = true.
-Proof. intros.
-       apply In1 in H.
-       apply In1.
-       cbn in *.
-       apply List.filter_In.
-       split.
-       + easy.
-       + rewrite String.eqb_sym. rewrite H0.
-         rewrite String.eqb_sym. rewrite H1. cbn. easy.
-Qed.
- *)
-
-
-(*
-Open Scope list_scope.
-Require Import List.
-Import ListNotations.
-Compute  (unique_help ["as"; "as"; "b"; "b"] "as").
-Compute unique_help (unique ["as"; "as"; "b"; "b"]) "as".
-Compute unique (unique_help ["as"; "as"; "b"; "b"] "c").
-Compute unique ["as"; "b"; "b"; "c"].  *)
-
-
-
-
-Lemma lamS: forall  t T x s,
-(s =? x) = false ->
-find x (fv (Lambda s T t)) = false ->
-find x (fv t) = false.
-Proof. intros. apply In2.
-       apply In2 in H0.
-       unfold not in *.
-       intros.
-       apply H0. cbn.
-       rewrite List.filter_In.
-       split. easy.
-       rewrite String.eqb_sym in H. rewrite H.
-       easy.
-Qed.
-
-(* Lemma fixS: forall  t T x s f T2,
-(s =? x) = false ->
-(f =? x) = false ->
-find x (fv (Fix f s T t T2)) = false ->
-find x (fv t) = false.
-Proof. intros. apply In2.
-       apply In2 in H1.
-       unfold not in *.
-       intros.
-       apply H1. cbn.
-       rewrite List.filter_In.
-       split. easy.
-       rewrite String.eqb_sym in H. rewrite H.
-       rewrite String.eqb_sym in H0. rewrite H0.
-       easy.
-Qed. *)
-
-
-Lemma vacuous_substitution: forall t x,
-     find x (fv t) = false -> forall t', subst t x t' = t.
-Proof. intro t.
-       induction t; intros.
-       - cbn in *. case_eq ( x =? s); intros.
-         + rewrite H0 in H. easy.
-         + rewrite String.eqb_sym in H0.
-           rewrite H0. easy.
-       - cbn. case_eq ( (s =? x) ); intros.
-         cbn. easy.
-         specialize (lamS _ _ _ _ H0 H); intros.
-         specialize (IHt x H1 t'). cbn.
-         rewrite IHt. easy.
-(*          case_eq (Bool.eqb (find s (fv t')) false); intros.
-         + rewrite IHt. easy.
-         + easy. *)
-       - cbn. rewrite IHt1, IHt2. easy.
-         + cbn in H. apply In2 in H.
-           apply In2. unfold not in *.
-           intros. apply H.
-           apply In5, In7. easy.
-         + apply In2 in H.
-           apply In2. unfold not in *.
-           intros. apply H.
-           apply In5, In6. easy.
-       - cbn. easy.
-       - cbn. easy.
-       - cbn. rewrite IHt1, IHt2, IHt3. easy.
-         + cbn in H. apply In2 in H.
-           apply In2. unfold not in *.
-           intros. apply H.
-           apply In5, In7, In7. easy.
-         + cbn in H. apply In2 in H.
-           apply In2. unfold not in *.
-           intros. apply H.
-           apply In5, In7, In6. easy.
-         + cbn in H. apply In2 in H.
-           apply In2. unfold not in *.
-           intros. apply H.
-           apply In5, In6. easy.
-       - cbn in *. rewrite IHt; easy.
-       - cbn in *. apply In2 in H.
-         rewrite IHt1, IHt2. easy.
-         apply In2.
-         unfold not in *. intros.
-         apply H.
-         apply In5, In7. easy.
-         apply In2.
-         unfold not in *. intros.
-         apply H.
-         apply In5, In6. easy.
-       - cbn in *. apply In2 in H.
-         rewrite IHt1, IHt2. easy.
-         apply In2.
-         unfold not in *. intros.
-         apply H.
-         apply In5, In7. easy.
-         apply In2.
-         unfold not in *. intros.
-         apply H.
-         apply In5, In6. easy.
-       - cbn in *. apply In2 in H.
-         rewrite IHt1, IHt2. easy.
-         apply In2.
-         unfold not in *. intros.
-         apply H.
-         apply In5, In7. easy.
-         apply In2.
-         unfold not in *. intros.
-         apply H.
-         apply In5, In6. easy.
-       - cbn in *. apply In2 in H.
-         rewrite IHt1, IHt2. easy.
-         apply In2.
-         unfold not in *. intros.
-         apply H.
-         apply In5, In7. easy.
-         apply In2.
-         unfold not in *. intros.
-         apply H.
-         apply In5, In6. easy.
-       - cbn in *. apply In2 in H.
-         rewrite IHt1, IHt2. easy.
-         apply In2.
-         unfold not in *. intros.
-         apply H.
-         apply In5, In7. easy.
-         apply In2.
-         unfold not in *. intros.
-         apply H.
-         apply In5, In6. easy.
-Qed.
-
 
 Lemma uh_diff: forall l x a b,
 List.In x (unique_help l a) ->
@@ -461,6 +385,7 @@ Proof. intro l.
 Qed.
 
 
+
 Lemma not_uh: forall l x a,
   ~ List.In x l ->
   ~ List.In x (unique_help l a).
@@ -480,6 +405,7 @@ Proof. intro l.
              destruct H. now left.
            * specialize (uh_diff l x a0 a H0 H2); intros. easy.
 Qed.
+
 
 Lemma listU: forall l x,
  List.In x (unique l) -> List.In x l.
@@ -531,8 +457,7 @@ Proof. intro l.
          apply List.in_app_or in H.
          case_eq ((x =? a)); intros.
          + rewrite String.eqb_eq in H0. left. now left.
-         + SearchAbout unique_help.
-           destruct H.
+         + destruct H.
            apply uh_drop in H. left. now right.
            apply uh_drop in H. now right.
 Qed.

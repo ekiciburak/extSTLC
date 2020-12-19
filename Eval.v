@@ -1,36 +1,6 @@
 From SFL Require Import Imports Terms Auxiliaries Typecheck.
 Require Import Coq.Strings.String.
 
-
-
-
-
-Fixpoint isvalue (t: term): bool :=
-  match t with
-    | Lambda x t e => true
-    | NVal n       => true
-    | BVal b       => true
-    | _            => false
-  end.
-
-Lemma isvalue_dec: forall t: term, isvalue t = true \/ isvalue t = false.
-Proof. intro t.
-       induction t; intros.
-       - cbn. now right.
-       - cbn. now left.
-       - cbn. now right.
-       - cbn. now left.
-       - cbn. now left.
-       - cbn. now right.
-       - cbn. destruct IHt. now right. now right.
-       - cbn. now right.
-       - cbn. now right.
-       - cbn. now right.
-       - cbn. now right.
-       - cbn. now right.
-Qed.
-
-
 Definition gtb (n m: nat): bool := Nat.ltb m n.
 
 Fixpoint beta (e: term): option term :=

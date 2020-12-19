@@ -2,10 +2,6 @@
 From SFL Require Import Imports Auxiliaries Terms.
 Require Import Coq.Strings.String.
 
-
-
-
-
 Definition ctx := list (string * type)%type.
 
 Definition extend (c: ctx) (x: string) (t: type) :=
@@ -18,68 +14,69 @@ Fixpoint lookup {A: Type} (c: list (string * A)) (s: string): option A :=
   end.
 
 
-  Fixpoint typecheck (m: ctx) (e: term): option type :=
-  match e with
-    | Ident s       => lookup m s
-    | Lambda x t e1 => let n := extend m x t in
-                       let te1 := typecheck n e1 in
-                       match te1 with
-                         | Some te1 => Some (Arrow t te1)
-                         | None => None 
+Fixpoint typecheck (m: ctx) (e: term): option type :=
+match e with
+  | Ident s       => lookup m s
+  | Lambda x t e1 => let n := extend m x t in
+                     let te1 := typecheck n e1 in
+                     match te1 with
+                       | Some te1 => Some (Arrow t te1)
+                       | None => None 
+                     end
+  | App e1 e2     => let te1 := typecheck m e1 in
+                     let te2 := typecheck m e2 in
+                     match te1, te2 with
+                       | Some (Arrow te1s te1t), Some te2 =>
+                           if type_eqb te1s te2 then Some te1t else None
+                       | _, _  => None
+                     end
+  | NVal n         => Some Int
+  | BVal b         => Some Bool
+  | ITE e1 e2 e3   => let te1 := typecheck m e1 in
+                      let te2 := typecheck m e2 in
+                      let te3 := typecheck m e3 in
+                      match te1, te2, te3 with
+                        | Some nte1, Some nte2, Some nte3 => 
+                          if type_eqb nte1 Bool && type_eqb nte2 nte3 then Some nte2 else None
+                        | _, _, _    => None 
+                      end
+   | Fix f         =>  let tf := typecheck m f in
+                       match tf with
+                         | Some (Arrow t1 t2) => if type_eqb t1 t2 then Some t2 else None
+                         | _                  => None
                        end
-    | App e1 e2     => let te1 := typecheck m e1 in
-                       let te2 := typecheck m e2 in
-                       match te1, te2 with
-                         | Some (Arrow te1s te1t), Some te2 =>
-                             if type_eqb te1s te2 then Some te1t else None
-                         | _, _  => None
-                       end
-    | NVal n         => Some Int
-    | BVal b         => Some Bool
-    | ITE e1 e2 e3   => let te1 := typecheck m e1 in
-                        let te2 := typecheck m e2 in
-                        let te3 := typecheck m e3 in
-                        match te1, te2, te3 with
-                          | Some nte1, Some nte2, Some nte3 => 
-                            if type_eqb nte1 Bool && type_eqb nte2 nte3 then Some nte2 else None
-                          | _, _, _    => None 
-                        end
-     | Fix f         =>  let tf := typecheck m f in
-                         match tf with
-                           | Some (Arrow t1 t2) => if type_eqb t1 t2 then Some t2 else None
-                           | _                  => None
-                         end
-     | Plus a b      => let t1 := typecheck m a in
-                        let t2 := typecheck m b in
-                        match t1, t2 with
-                          | Some Int, Some Int => Some Int
-                          | _, _               => None
-                        end
-     | Minus a b     => let t1 := typecheck m a in
-                        let t2 := typecheck m b in
-                        match t1, t2 with
-                          | Some Int, Some Int => Some Int
-                          | _, _               => None
-                        end
-     | Mult a b      => let t1 := typecheck m a in
-                        let t2 := typecheck m b in
-                        match t1, t2 with
-                          | Some Int, Some Int => Some Int
-                          | _, _               => None
-                        end
-     | Eq a b        => let t1 := typecheck m a in
-                        let t2 := typecheck m b in
-                        match t1, t2 with
-                          | Some Int, Some Int => Some Bool
-                          | _, _               => None
-                        end
-     | Gt a b        => let t1 := typecheck m a in
-                        let t2 := typecheck m b in
-                        match t1, t2 with
-                          | Some Int, Some Int => Some Bool
-                          | _, _               => None
-                        end
-  end.
+   | Plus a b      => let t1 := typecheck m a in
+                      let t2 := typecheck m b in
+                      match t1, t2 with
+                        | Some Int, Some Int => Some Int
+                        | _, _               => None
+                      end
+   | Minus a b     => let t1 := typecheck m a in
+                      let t2 := typecheck m b in
+                      match t1, t2 with
+                        | Some Int, Some Int => Some Int
+                        | _, _               => None
+                      end
+   | Mult a b      => let t1 := typecheck m a in
+                      let t2 := typecheck m b in
+                      match t1, t2 with
+                        | Some Int, Some Int => Some Int
+                        | _, _               => None
+                      end
+   | Eq a b        => let t1 := typecheck m a in
+                      let t2 := typecheck m b in
+                      match t1, t2 with
+                        | Some Int, Some Int => Some Bool
+                        | _, _               => None
+                      end
+   | Gt a b        => let t1 := typecheck m a in
+                      let t2 := typecheck m b in
+                      match t1, t2 with
+                        | Some Int, Some Int => Some Bool
+                        | _, _               => None
+                      end
+end.
+
 
 
   (** http://color.inria.fr/papers/koprowski06draft.pdf -- look into "Theorem autoType" *)
@@ -836,13 +833,6 @@ Proof. intros.
        induction t; intros; simpl; rewrite String.eqb_refl; simpl; easy.
 Qed.
 
-(* Lemma subst00: forall t v x T f T2, 
-(subst (Fix f x T t T2) x v) = (Fix f x T t T2).
-Proof. intros.
-       induction t; intros; simpl; rewrite String.eqb_refl; simpl; easy.
-Qed. *)
-
-
 Lemma fv_neq: forall t x y T,
   find y (fv (Lambda x T t)) = true -> String.eqb x y = false.
 Proof. intros.
@@ -852,24 +842,8 @@ Proof. intros.
        case_eq ((y =? x)); intros.
        + rewrite H1 in H0. cbn in H0. easy.
        + now rewrite String.eqb_sym in H1.
-Qed.
+Qed. 
 
-(* Lemma fv_neq0: forall t x y T f T2,
-  find y (fv (Fix f x T t T2)) = true -> String.eqb x y = false /\ String.eqb f y = false.
-Proof. intros.
-       apply In1 in H. cbn in H.
-       apply List.filter_In in H.
-       destruct H.
-       apply Bool.andb_true_iff in H0. 
-       destruct H0.
-       case_eq ((y =? x)); intros.
-       + rewrite H2 in H0. cbn in H0. easy.
-       + rewrite String.eqb_sym in H2. rewrite H2. 
-         case_eq (f =? y); intros.
-         ++ rewrite String.eqb_sym in H1.
-            rewrite H3 in H1. easy.
-         ++ easy.
-Qed. *)
 
 Lemma cinv0: forall t x s T T2 U G,
   String.eqb x s = false ->
@@ -884,40 +858,4 @@ Proof. intros.
        + rewrite String.eqb_eq in H2.
          rewrite H2 in H. rewrite H. easy.
        + easy.
-Qed.
-
-Lemma cinv1: forall a b A B C t T G,
-  String.eqb a b = false ->
-  typecheck ((a, A) :: (b, B) :: (b, C) :: G) t = Some T ->
-  typecheck ((a, A) :: (b, B) :: G) t = Some T.
-Proof. intros.
-       specialize (context_invariance ((a, A) :: (b, B) :: (b, C) :: G) ((a, A) :: (b, B) :: G) t T H0); intros.
-       rewrite H1. easy.
-       intros y Hy. cbn.
-       case_eq (a =? y); intros. easy.
-       case_eq (b =? y); intros. easy. easy.
-Qed.
-
-
-Lemma cinv2: forall a b c A B C t T G,
-  String.eqb a b = false ->
-  String.eqb b c = false ->
-  String.eqb a c = false ->
-  typecheck ((a, A) :: (b, B) :: (c, C) :: G) t = Some T ->
-  typecheck ((c, C) :: (a, A) :: (b, B) :: G) t = Some T.
-Proof. intros.
-       specialize (context_invariance ((a, A) :: (b, B) :: (c, C) :: G) 
-                                      ((c, C) :: (a, A) :: (b, B) :: G) t T H2); intros.
-       rewrite H3. easy.
-       intros y Hy. cbn.
-       case_eq (a =? y); intros.
-       apply String.eqb_eq in H4.
-       subst. rewrite String.eqb_sym in H1.
-       rewrite H1. easy.
-       case_eq (b =? y); intros.
-       apply String.eqb_eq in H5.
-       subst. rewrite String.eqb_sym in H0.
-       rewrite H0. easy.
-       case_eq (c =? y); intros.
-       easy. easy.
 Qed.
