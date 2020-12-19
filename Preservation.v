@@ -297,17 +297,6 @@ Proof. intros.
        - rewrite H1 in H. easy.
 Qed.
 
-
-Lemma AppApp_TL2: forall e1 e2 e1',
-  isvalue e1 = false ->
-  beta e1 = Some e1' -> 
-  beta (App e1 e2) = Some (App e1' e2).
-Proof. intros.
-       cbn. rewrite H0.
-       + case_eq e1; intros; try (subst; cbn in *; easy).
-Qed.
-
-
 Lemma fixTyping: forall t T, typecheck nil (Fix t) = Some T -> typecheck nil t = Some (Arrow T T).
 Proof. intro t.
        induction t; intros; try (cbn in *; easy).
@@ -437,105 +426,32 @@ Proof with eauto.
            case_eq (isvalue t2); intros.
            ++ rewrite H1 in H0.
               inversion H0.
-              case_eq t2.
-              +++ intros s Hts.
-                  rewrite Hts in H1. easy.
-              +++ intros x' tx' e' Ht2.
-                  cbn in H.
-                  rewrite Ht1, Ht2 in H.
-                  cbn in H.
+              specialize (AppAppE t1 t2 T H); intros.
+              destruct H2 as (U, H2).
+              specialize (AppAppT t1 t2 T U H H2); intros.
+              specialize (subst_preserves_typing x e t2 T U nil); intros.
+              rewrite H5.
+              +++ easy.
+              +++ rewrite Ht1 in H2. cbn in H2.
                   case_eq (typecheck (extend nil x tx) e); intros.
-                  * rewrite H2 in H.
-                    case_eq (typecheck (extend nil x' tx') e'); intros.
-                    ** rewrite H4 in H.
-                       case_eq (type_eqb tx (Arrow tx' t0)); intros.
-                       *** rewrite H5 in H.
-                           specialize (subst_preserves_typing x e 
-                                 (Lambda x' tx' e') t tx nil); intros.
-                           rewrite H6.
-                           ++++ easy.
-                           ++++ easy.
-                           ++++ cbn. rewrite H4.
-                                apply type_eqb_eq in H5.
-                                rewrite H5. easy.
-                       *** rewrite H5 in H; contradict H; easy.
-                    ** rewrite H4 in H; contradict H; easy.
-                  * rewrite H2 in H; contradict H; easy.
-              +++ intros e1 e2 Ht2.
-                  rewrite Ht2 in H1.
-                  contradict H1; easy.
-              +++ intros n Ht2.
-                  rewrite Ht1, Ht2 in H.
-                  cbn in H.
-                  case_eq ( typecheck (extend nil x tx) e); intros.
-                  * rewrite H2 in H.
-                    case_eq (type_eqb tx Int); intros.
-                    ** rewrite H4 in H.
-                       specialize (subst_preserves_typing x e 
-                                      (NVal n) t tx nil); intros.
-                       rewrite H5.
-                       *** easy.
-                       *** easy.
-                       *** cbn. 
-                           apply type_eqb_eq in H4. rewrite H4. easy.
-                    ** rewrite H4 in H; contradict H; easy.
-                  * rewrite H2 in H; contradict H; easy.
-              +++ intros b Ht2.
-                  rewrite Ht1, Ht2 in H.
-                  cbn in H.
-                  case_eq ( typecheck (extend nil x tx) e); intros.
-                  * rewrite H2 in H.
-                    case_eq (type_eqb tx Bool); intros.
-                    ** rewrite H4 in H.
-                       specialize (subst_preserves_typing x e 
-                                      (BVal b) t tx nil); intros.
-                       rewrite H5.
-                       *** easy.
-                       *** easy.
-                       *** cbn. 
-                           apply type_eqb_eq in H4. rewrite H4. easy.
-                    ** rewrite H4 in H; contradict H; easy.
-                  * rewrite H2 in H; contradict H; easy.
-              +++ intros e1 e2 e3 Ht2.
-                  rewrite Ht2 in H1.
-                  contradict H1; easy.
-              +++ intros t2' Ht2.
-                  rewrite Ht2 in H1.
-                  contradict H1; easy.
-              +++ intros e1 e2 Ht2.
-                  rewrite Ht2 in H1.
-                  contradict H1; easy.
-              +++ intros e1 e2 Ht2.
-                  rewrite Ht2 in H1.
-                  contradict H1; easy.
-              +++ intros e1 e2 Ht2.
-                  rewrite Ht2 in H1.
-                  contradict H1; easy.
-              +++ intros e1 e2 Ht2.
-                  rewrite Ht2 in H1.
-                  contradict H1; easy.
-              +++ intros e1 e2 Ht2.
-                  rewrite Ht2 in H1.
-                  contradict H1; easy.
+                  * rewrite H6 in H2.
+                    inversion H2. subst. easy.
+                  * rewrite H6 in H2. contradict H2; easy.
+              +++ easy.
            ++ rewrite H1 in H0.
-              case_eq (beta t2). intros t2' Ht2.
-              +++ rewrite Ht2 in H0.
+              specialize (AppAppE t1 t2 T H); intros.
+              destruct H2 as (U, H2).
+              specialize (AppAppT t1 t2 T U H H2); intros.
+              specialize (progress t2 U H3); intros.
+              destruct H4 as [H4 | H4].
+              +++ rewrite H4 in H1. contradict H1; easy.
+              +++ destruct H4 as (t2', H4).
+                  rewrite H4 in H0.
                   inversion H0. cbn.
-                  rewrite Ht1 in H.
-                  cbn in H.
-                  case_eq (typecheck (extend nil x tx) e); intros.
-                  ++++ rewrite H2 in H.
-                       case_eq (typecheck nil t2); intros.
-                       * rewrite H4 in H.
-                         case_eq (type_eqb tx t0); intros.
-                         ** rewrite H5 in H.
-                            specialize (IHt2 t2' t0 H4 Ht2).
-                            rewrite IHt2. rewrite H5. easy.
-                         ** rewrite H5 in H. contradict H; easy.
-                       * rewrite H4 in H. contradict H; easy.
-                  ++++ rewrite H2 in H. contradict H; easy.
-               +++ intro Ht2. rewrite Ht2 in H0.
-                   contradict H0; easy.
+                  rewrite Ht1 in H2.
+                  cbn in H2. rewrite H2.
+                  specialize (IHt2 t2' U H3 H4).
+                  rewrite IHt2, type_eqb_refl. easy.
          + intros e1 e2 Ht1.
            rewrite Ht1 in H0.
            assert (isvalue (App e1 e2) = false) by easy.
@@ -549,12 +465,10 @@ Proof with eauto.
               rewrite <- Ht1 in H0.
               rewrite H3 in H0.
               inversion H0.
-              rewrite <- Ht1 in H1.
-              specialize (AppApp_TL2 t1 t2 t1' H1 H3); intros.
+              rewrite <- Ht1 in H1. cbn.
               specialize (AppAppT t1 t2 T U H H2); intros.
-              cbn.
               specialize (IHt1 t1' (Arrow U T) H2 H3).
-              rewrite IHt1, H6, type_eqb_refl. easy.
+              rewrite IHt1, H4, type_eqb_refl. easy.
          + intros n Ht1.
            rewrite Ht1 in H.
            cbn in H. inversion H; easy.
@@ -574,12 +488,10 @@ Proof with eauto.
               rewrite <- Ht1 in H0.
               rewrite H3 in H0.
               inversion H0.
-              rewrite <- Ht1 in H1.
-              specialize (AppApp_TL2 t1 t2 e1' H1 H3); intros.
+              rewrite <- Ht1 in H1. cbn.
               specialize (AppAppT t1 t2 T U H H2); intros.
-              cbn.
               specialize (IHt1 e1' (Arrow U T) H2 H3).
-              rewrite IHt1, H6, type_eqb_refl. easy.
+              rewrite IHt1, H4, type_eqb_refl. easy.
          + intros e1 Ht1.
            rewrite Ht1 in H0.
            assert (isvalue (Fix e1) = false) by easy.
@@ -593,12 +505,10 @@ Proof with eauto.
               rewrite <- Ht1 in H0.
               rewrite H3 in H0.
               inversion H0.
-              rewrite <- Ht1 in H1.
-              specialize (AppApp_TL2 t1 t2 t1' H1 H3); intros.
+              rewrite <- Ht1 in H1. cbn.
               specialize (AppAppT t1 t2 T U H H2); intros.
-              cbn.
               specialize (IHt1 t1' (Arrow U T) H2 H3).
-              rewrite IHt1, H6, type_eqb_refl. easy.
+              rewrite IHt1, H4, type_eqb_refl. easy.
          + intros e1 e2 Ht1.
            rewrite Ht1 in H.
            cbn in H.

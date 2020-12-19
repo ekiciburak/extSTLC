@@ -113,7 +113,7 @@ Inductive term: Type :=
   | Gt    : term   -> term -> term.
 
 
-Fixpoint isvalue (t: term): bool :=
+Definition isvalue (t: term): bool :=
   match t with
     | Lambda x t e => true
     | NVal n       => true
@@ -273,7 +273,7 @@ Proof. intro t1.
          subst. easy.
 Qed.
 
-Fixpoint term_eqbO (t1 t2: option term): bool :=
+Definition term_eqbO (t1 t2: option term): bool :=
   match t1, t2 with
     | Some t1, Some t2 => term_eqb t1 t2
     | None, None => true
