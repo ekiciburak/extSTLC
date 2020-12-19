@@ -120,7 +120,7 @@ Proof. intros t Htc.
 
 
 
-Lemma progress: forall t,
+Lemma progressPre: forall t,
   istypechecked nil t  = true ->
   (isvalue t = true) \/ (exists t', term_eqbO (beta t) (Some t') = true).
 Proof. intros t Htc.
@@ -492,11 +492,11 @@ Proof. intros t Htc.
 Qed.
 
 
-Lemma progressR: forall t T,
+Lemma progress: forall t T,
   typecheck nil t  = Some T ->
   (isvalue t = true) \/ (exists t', beta t = Some t').
 Proof. intros t T Htc.
-       specialize (progress t); intros.
+       specialize (progressPre t); intros.
        unfold istypechecked in *.
        rewrite Htc in H.
        specialize (H eq_refl).

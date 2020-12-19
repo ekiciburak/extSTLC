@@ -378,8 +378,6 @@ Proof. intros.
        - rewrite H1 in H. easy.
 Qed.
 
-
-
 (* Lemma AppZ: forall t T U s, 
 typecheck nil (App (Lambda s T t) Zero) = Some U ->
 T = Int.

@@ -554,6 +554,23 @@ Proof. intro t.
        destruct t0; easy.
 Qed.
 
+Lemma istypechecked_plus3: forall (t1 t2: term) T, typecheck nil (Plus t1 t2) = Some T ->
+  typecheck nil t1 = Some Int /\ typecheck nil t2 = Some Int /\ T = Int.
+Proof. intro t1.
+       cbn.
+       case_eq (typecheck nil t1); intros; try easy.
+       case_eq t; intros.
+       + rewrite H1 in H0.
+         case_eq (typecheck nil t2); intros.
+         ++ rewrite H2 in H0.
+            destruct t0. inversion H0. easy.
+            easy.
+            easy.
+         ++ rewrite H2 in H0. easy.
+       + rewrite H1 in H0. easy.
+       + rewrite H1 in H0. easy.
+Qed.
+
 
 Lemma istypechecked_minus: forall (t1 t2: term), istypechecked nil (Minus t1 t2) = true ->
   istypechecked nil t1 = true /\ istypechecked nil t2 = true.
@@ -599,6 +616,24 @@ Proof. intro t.
        destruct t0; destruct t1; easy.
        rewrite H1 in H0. 
        destruct t0; easy.
+Qed.
+
+
+Lemma istypechecked_eq3: forall (t1 t2: term) T, typecheck nil (Eq t1 t2) = Some T ->
+  typecheck nil t1 = Some Int /\ typecheck nil t2 = Some Int /\ T = Bool.
+Proof. intro t1.
+       cbn.
+       case_eq (typecheck nil t1); intros; try easy.
+       case_eq t; intros.
+       + rewrite H1 in H0.
+         case_eq (typecheck nil t2); intros.
+         ++ rewrite H2 in H0.
+            destruct t0. inversion H0. easy.
+            easy.
+            easy.
+         ++ rewrite H2 in H0. easy.
+       + rewrite H1 in H0. easy.
+       + rewrite H1 in H0. easy.
 Qed.
 
 Lemma istypechecked_gt: forall (t1 t2: term), istypechecked nil (Gt t1 t2) = true ->
