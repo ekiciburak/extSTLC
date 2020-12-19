@@ -554,6 +554,7 @@ Proof. intro t.
        destruct t0; easy.
 Qed.
 
+
 Lemma istypechecked_minus: forall (t1 t2: term), istypechecked nil (Minus t1 t2) = true ->
   istypechecked nil t1 = true /\ istypechecked nil t2 = true.
 Proof. intro t.
@@ -584,6 +585,19 @@ Proof. intro t.
        split. easy.
        case_eq (typecheck nil t2); intros. easy.
        rewrite  H1 in H0.
+       destruct t0; easy.
+Qed.
+
+
+Lemma istypechecked_eq2: forall (t1 t2: term), istypechecked nil (Eq t1 t2) = true ->
+  typecheck nil t1 = Some Int /\ typecheck nil t2 = Some Int.
+Proof. intro t.
+       unfold istypechecked. cbn.
+       case_eq (typecheck nil t); intros; try easy.
+       case_eq (typecheck nil t2); intros.
+       rewrite  H1 in H0.
+       destruct t0; destruct t1; easy.
+       rewrite H1 in H0. 
        destruct t0; easy.
 Qed.
 
