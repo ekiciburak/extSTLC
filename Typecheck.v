@@ -859,3 +859,410 @@ Proof. intros.
          rewrite H2 in H. rewrite H. easy.
        + easy.
 Qed.
+
+
+Lemma free_in_context: forall t x T G,
+   List.In x (fv t) ->
+   typecheck G t = Some T ->
+   exists T', lookup G x = Some T'.
+Proof. intro t.
+       induction t; intros.
+       - cbn in *. destruct H. subst.
+         exists T. easy. easy.
+       - cbn in *. apply List.filter_In in H.
+         destruct H.
+         case_eq (typecheck (extend G s t) t0 ); intros.
+         + rewrite H2 in H0. inversion H0.
+           specialize (IHt x t1 (extend G s t) H H2).
+           destruct IHt. exists x0. cbn in *.
+           case_eq (s =? x); intros.
+           ++ rewrite String.eqb_sym in H1.
+              rewrite H5 in H1. easy.
+           ++ rewrite H5 in H3. easy.
+         + rewrite H2 in H0. easy.
+       - cbn in *. apply listE in H.
+         case_eq (typecheck G t1); intros.
+         + case_eq(typecheck G t2); intros.
+           ++ destruct H.
+              +++ specialize (IHt1 x t G H H1). easy.
+              +++ specialize (IHt2 x t0 G H H2). easy.
+           ++ rewrite H2 in H0.
+              rewrite H1 in H0.
+              destruct t in H0; easy.
+         + rewrite H1 in H0. easy.
+       - cbn in H. easy.
+       - cbn in H. easy.
+       - cbn in H. apply listE in H.
+         destruct H.
+         cbn in H0.
+         case_eq (typecheck G t1 ); intros.
+         + apply IHt1 with (T := t). easy. easy.
+         + rewrite H1 in H0. easy.
+         + apply List.in_app_or in H.
+           destruct H.
+           ++ case_eq (typecheck G t2); intros.
+              +++ apply IHt2 with (T := t). easy. easy.
+              +++ cbn in H0. rewrite H1 in H0.
+                  case_eq (typecheck G t1); intros.
+                  * rewrite H2 in H0. easy.
+                  * rewrite H2 in H0. easy.
+           ++ case_eq (typecheck G t3); intros.
+              +++ apply IHt3 with (T := t). easy. easy.
+              +++ cbn in H0. rewrite H1 in H0.
+                  case_eq (typecheck G t1); case_eq(typecheck G t2); intros; rewrite H2, H3 in H0; easy.
+       - cbn in H. cbn in H0.
+         case_eq (typecheck G t); intros.
+         + specialize (IHt x t0 G H H1). easy.
+         + rewrite H1 in H0. easy.
+       - cbn in H. cbn in H0.
+         apply listE in H.
+         case_eq (typecheck G t1); intros.
+         + case_eq (typecheck G t2); intros.
+           ++ destruct H.
+              * specialize (IHt1 x t G H H1). easy.
+              * specialize (IHt2 x t0 G H H2). easy.
+           ++ rewrite H2 in H0. destruct (typecheck G t1). destruct t0; easy.
+              easy.
+         + rewrite H1 in H0. easy.
+       - cbn in H. cbn in H0.
+         apply listE in H.
+         case_eq (typecheck G t1); intros.
+         + case_eq (typecheck G t2); intros.
+           ++ destruct H.
+              * specialize (IHt1 x t G H H1). easy.
+              * specialize (IHt2 x t0 G H H2). easy.
+           ++ rewrite H2 in H0. destruct (typecheck G t1). destruct t0; easy.
+              easy.
+         + rewrite H1 in H0. easy.
+       - cbn in H. cbn in H0.
+         apply listE in H.
+         case_eq (typecheck G t1); intros.
+         + case_eq (typecheck G t2); intros.
+           ++ destruct H.
+              * specialize (IHt1 x t G H H1). easy.
+              * specialize (IHt2 x t0 G H H2). easy.
+           ++ rewrite H2 in H0. destruct (typecheck G t1). destruct t0; easy.
+              easy.
+         + rewrite H1 in H0. easy.
+       - cbn in H. cbn in H0.
+         apply listE in H.
+         case_eq (typecheck G t1); intros.
+         + case_eq (typecheck G t2); intros.
+           ++ destruct H.
+              * specialize (IHt1 x t G H H1). easy.
+              * specialize (IHt2 x t0 G H H2). easy.
+           ++ rewrite H2 in H0. destruct (typecheck G t1). destruct t0; easy.
+              easy.
+         + rewrite H1 in H0. easy.
+       - cbn in H. cbn in H0.
+         apply listE in H.
+         case_eq (typecheck G t1); intros.
+         + case_eq (typecheck G t2); intros.
+           ++ destruct H.
+              * specialize (IHt1 x t G H H1). easy.
+              * specialize (IHt2 x t0 G H H2). easy.
+           ++ rewrite H2 in H0. destruct (typecheck G t1). destruct t0; easy.
+              easy.
+         + rewrite H1 in H0. easy.
+Qed.
+
+
+Lemma subst_preserves_typing: forall (x: string) (t v: term) (T U: type) (G: ctx),
+  typecheck (extend G x U) t = Some T ->
+  typecheck nil v = Some U ->
+(*   Bool.eqb (find x (fv v)) false = true -> *)
+  typecheck G (subst t x v) = Some T.
+Proof. intros x t.
+       revert x.
+       induction t; intros.
+(* intros x v T U G H Ha H0. *)
+       - cbn in *. case_eq (x =? s); intros.
+         + rewrite H1 in H.
+           rewrite String.eqb_sym in H1.
+           rewrite H1.
+           specialize (context_invariance nil G v T); intros.
+           rewrite H2. easy. rewrite <- H. easy.
+           intros y Hy. cbn.
+           specialize (free_in_context v y T nil); intros.
+           apply In1 in Hy.
+           rewrite H in H0.
+           specialize (H3 Hy H0).
+           destruct H3. cbn in H3. easy.
+         + rewrite H1 in H. rewrite String.eqb_sym in H1. rewrite H1.
+           cbn. easy.
+       - case_eq (s =? x); intros.
+         + rewrite String.eqb_eq in H1.
+           rewrite H1 in *.
+           rewrite subst0.
+           specialize (context_invariance ((x, U) :: G) G (Lambda x t t0)); intros. 
+           apply H2. easy.
+           intros y Hy.
+           apply fv_neq in Hy. cbn.
+           rewrite Hy. easy.
+         + cbn. rewrite H1. cbn.
+           cbn in H. unfold extend in *.
+           cbn in *.
+
+           case_eq (typecheck ((s, t) :: (x, U) :: G) t0); intros.
+           rewrite H2 in H.
+           unfold extend in *.
+
+           specialize (IHt x v t1 U ((s, t) :: G)).
+           apply cinv0 in H2.
+           specialize (IHt H2). rewrite IHt. easy.
+           easy. rewrite String.eqb_sym. easy.
+           rewrite H2 in H. easy.
+      - cbn. cbn in H.
+        case_eq (typecheck (extend G x U) t1); intros.
+        + rewrite H1 in H.
+          case_eq (typecheck (extend G x U) t2); intros.
+          ++ rewrite H2 in H.
+             rewrite (IHt1 x v t U G).
+             rewrite (IHt2 x v t0 U G).
+             easy. 
+             easy.
+             easy.
+             easy.
+             easy.
+          ++ rewrite H2 in H.
+             case_eq t; intros; subst; easy.
+        + rewrite H1 in H. easy.
+      - cbn in *. easy.
+      - cbn in *. easy.
+      - cbn in *. unfold extend in *.
+        case_eq (typecheck ((x, U) :: G) t1); intros.
+        + rewrite H1 in H.
+          case_eq (typecheck ((x, U) :: G) t2); intros.
+          ++ rewrite H2 in H.
+             case_eq (typecheck ((x, U) :: G) t3); intros. 
+             +++ rewrite H3 in H.
+                 rewrite (IHt1 x v t U G).
+                 rewrite (IHt2 x v t0 U G).
+                 rewrite (IHt3 x v t4 U G).
+                 easy.
+                 easy.
+                 easy.
+                 easy.
+                 easy.
+                 easy.
+                 easy.
+             +++ rewrite H3 in H. easy.
+          ++ rewrite H2 in H. easy.
+        + rewrite H1 in H. easy.
+      - cbn in *.
+        case_eq (typecheck (extend G x U) t); intros.
+        specialize (IHt x v t0 U G H1 H0).
+        rewrite IHt.
+        destruct t0; rewrite H1 in H; easy.
+        rewrite H1 in H. easy.
+      - cbn in *.
+        case_eq (typecheck (extend G x U) t1); intros.
+        + rewrite H1 in H.
+          case_eq (typecheck (extend G x U) t2); intros.
+          ++ rewrite H2 in H.
+             specialize (IHt1 x v t U G H1 H0).
+             specialize (IHt2 x v t0 U G H2 H0).
+             rewrite IHt1, IHt2. easy.
+          ++ rewrite H2 in H.
+             destruct t; easy.
+        + rewrite H1 in H. easy.
+      - cbn in *.
+        case_eq (typecheck (extend G x U) t1); intros.
+        + rewrite H1 in H.
+          case_eq (typecheck (extend G x U) t2); intros.
+          ++ rewrite H2 in H.
+             specialize (IHt1 x v t U G H1 H0).
+             specialize (IHt2 x v t0 U G H2 H0).
+             rewrite IHt1, IHt2. easy.
+          ++ rewrite H2 in H.
+             destruct t; easy.
+        + rewrite H1 in H. easy.
+      - cbn in *.
+        case_eq (typecheck (extend G x U) t1); intros.
+        + rewrite H1 in H.
+          case_eq (typecheck (extend G x U) t2); intros.
+          ++ rewrite H2 in H.
+             specialize (IHt1 x v t U G H1 H0).
+             specialize (IHt2 x v t0 U G H2 H0).
+             rewrite IHt1, IHt2. easy.
+          ++ rewrite H2 in H.
+             destruct t; easy.
+        + rewrite H1 in H. easy.
+      - cbn in *.
+        case_eq (typecheck (extend G x U) t1); intros.
+        + rewrite H1 in H.
+          case_eq (typecheck (extend G x U) t2); intros.
+          ++ rewrite H2 in H.
+             specialize (IHt1 x v t U G H1 H0).
+             specialize (IHt2 x v t0 U G H2 H0).
+             rewrite IHt1, IHt2. easy.
+          ++ rewrite H2 in H.
+             destruct t; easy.
+        + rewrite H1 in H. easy.
+      - cbn in *.
+        case_eq (typecheck (extend G x U) t1); intros.
+        + rewrite H1 in H.
+          case_eq (typecheck (extend G x U) t2); intros.
+          ++ rewrite H2 in H.
+             specialize (IHt1 x v t U G H1 H0).
+             specialize (IHt2 x v t0 U G H2 H0).
+             rewrite IHt1, IHt2. easy.
+          ++ rewrite H2 in H.
+             destruct t; easy.
+         + rewrite H1 in H. easy.
+Qed.
+
+Lemma AppAppE: forall t1 t2 T, 
+typecheck nil (App t1 t2) = Some T ->
+exists U, typecheck nil t1 = Some (Arrow U T).
+Proof. intros.
+       cbn in *.
+       case_eq (typecheck nil t1); intros.
+       - rewrite H0 in H.
+         case_eq (typecheck nil t2); intros.
+         + rewrite H1 in H.
+           destruct t; try easy.
+           case_eq (type_eqb t3 t0); intros.
+           ++ rewrite H2 in H. 
+              inversion H.
+              apply type_eqb_eq in H2.
+              subst. now exists t0.
+           ++ rewrite H2 in H. easy.
+         + rewrite H1 in H. destruct t; easy. 
+       - rewrite H0 in H. easy.
+Qed.
+
+Lemma AppAppT: forall t1 t2 T U, 
+typecheck nil (App t1 t2) = Some T ->
+typecheck nil t1 = Some (Arrow U T) ->
+typecheck nil t2 = Some U.
+Proof. intros.
+       cbn in H.
+       case_eq (typecheck nil t1); intros.
+       rewrite H0 in H.
+       case_eq (typecheck nil t2); intros.
+       rewrite H2 in H.
+       case_eq t; intros.
+       - case_eq (type_eqb U t0 ); intros.
+         ++ apply type_eqb_eq in H4. subst. easy.
+         ++ rewrite H4 in H. easy.
+       - case_eq (type_eqb U t0 ); intros.
+         ++ apply type_eqb_eq in H4. subst. easy.
+         ++ rewrite H4 in H. easy.
+       - case_eq (type_eqb U t0 ); intros.
+         ++ apply type_eqb_eq in H4. subst. easy.
+         ++ rewrite H4 in H. easy.
+       - rewrite H2 in H. easy.
+       - rewrite H1 in H. easy.
+Qed.
+
+Lemma fixTyping: forall t T, typecheck nil (Fix t) = Some T -> typecheck nil t = Some (Arrow T T).
+Proof. intro t.
+       induction t; intros; try (cbn in *; easy).
+       - cbn in *.
+         case_eq (typecheck (extend nil s t) t0); intros.
+         + rewrite H0 in H.
+           case_eq (type_eqb t t1); intros.
+           ++ apply type_eqb_eq in H1.
+              subst. rewrite type_eqb_refl in H.
+              inversion H. easy.
+           ++ rewrite H1 in H. easy.
+         + rewrite H0 in H. easy.
+       - cbn in *.
+         case_eq (typecheck nil t1); intros.
+         + rewrite H0 in H.
+           destruct t. easy. easy.
+           case_eq (typecheck nil t2); intros.
+           ++ rewrite H1 in H.
+              case_eq (type_eqb t3 t); intros.
+              * rewrite H2 in H.
+                destruct t4. easy. easy.
+                case_eq (type_eqb t4_1 t4_2); intros.
+                rewrite H3 in H.
+                inversion H. subst.
+                apply type_eqb_eq in H3. subst. easy.
+                rewrite H3 in H. easy.
+              * rewrite H2 in H. easy.
+           ++ rewrite H1 in H. easy.
+         + rewrite H0 in H. easy.
+       - cbn in H.
+         case_eq (typecheck nil t1); intros.
+         + rewrite H0 in H.
+           case_eq (typecheck nil t2); intros.
+           ++ rewrite H1 in H.
+              case_eq (typecheck nil t3); intros.
+              * rewrite H2 in H.
+                case_eq (type_eqb t Bool && type_eqb t0 t4 ); intros.
+                rewrite H3 in H.
+                destruct t0. easy. easy.
+                case_eq (type_eqb t0_1 t0_2); intros.
+                rewrite H4 in H.
+                inversion H.
+                cbn. rewrite H0, H1, H2, H3.
+                apply type_eqb_eq in H4. subst. easy.
+                rewrite H4 in H. easy.
+                rewrite H3 in H. easy.
+              * rewrite H2 in H. easy.
+           ++ rewrite H1 in H. easy.
+         + rewrite H0 in H. easy.
+       - cbn in H. cbn.
+         case_eq (typecheck nil t); intros.
+         + rewrite H0 in H. 
+           destruct t0. easy. easy.
+           case_eq (type_eqb t0_1 t0_2); intros.
+           rewrite H1 in H.
+           destruct t0_2. easy. easy.
+           case_eq (type_eqb t0_2_1 t0_2_2); intros.
+           rewrite H2 in H. inversion H.
+           apply type_eqb_eq in H2. subst. easy.
+           rewrite H2 in H. easy.
+           rewrite H1 in H. easy.
+         + rewrite H0 in H. easy.
+       - cbn in H. cbn.
+         case_eq (typecheck nil t1 ); intros.
+         + rewrite H0 in H.
+           destruct t.
+           case_eq (typecheck nil t2); intros.
+           rewrite H1 in H.
+           destruct t. easy. easy. easy.
+           rewrite H1 in H. easy. easy. easy.
+         + rewrite H0 in H. easy.
+       - cbn in H. cbn.
+         case_eq (typecheck nil t1 ); intros.
+         + rewrite H0 in H.
+           destruct t.
+           case_eq (typecheck nil t2); intros.
+           rewrite H1 in H.
+           destruct t. easy. easy. easy.
+           rewrite H1 in H. easy. easy. easy.
+         + rewrite H0 in H. easy.
+       - cbn in H. cbn.
+         case_eq (typecheck nil t1 ); intros.
+         + rewrite H0 in H.
+           destruct t.
+           case_eq (typecheck nil t2); intros.
+           rewrite H1 in H.
+           destruct t. easy. easy. easy.
+           rewrite H1 in H. easy. easy. easy.
+         + rewrite H0 in H. easy.
+       - cbn in H. cbn.
+         case_eq (typecheck nil t1 ); intros.
+         + rewrite H0 in H.
+           destruct t.
+           case_eq (typecheck nil t2); intros.
+           rewrite H1 in H.
+           destruct t. easy. easy. easy.
+           rewrite H1 in H. easy. easy. easy.
+         + rewrite H0 in H. easy.
+       - cbn in H. cbn.
+         case_eq (typecheck nil t1 ); intros.
+         + rewrite H0 in H.
+           destruct t.
+           case_eq (typecheck nil t2); intros.
+           rewrite H1 in H.
+           destruct t. easy. easy. easy.
+           rewrite H1 in H. easy. easy. easy.
+         + rewrite H0 in H. easy.
+Qed.
+
+

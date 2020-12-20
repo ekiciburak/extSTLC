@@ -122,19 +122,20 @@ Definition factorial :=
 
 Definition f := App (App (Fix factorial) (NVal 7)) (NVal 2).
 
-Fixpoint evaln (e: term) (n: nat): option term :=
+Fixpoint evaln (t: term) (n: nat): option term :=
   match n with
-    | O   => Some e
-    | S m => let be := beta e in
-             match be with
-               | Some sbe => evaln sbe m
-               | None     => None
+    | O   => Some t
+    | S n => let t' := beta t in
+             match t' with
+               | Some t' => evaln t' n
+               | None    => None
              end
   end.
 
 Eval compute in evaln f 53.
 
 Eval compute in evaln (App (NVal 5) (ITE (NVal 3) (NVal 5) (NVal 10))) 1.
+
 
 
 
