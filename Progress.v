@@ -99,8 +99,7 @@ Proof. intros t Htc.
            ++ intros. subst. cbn in *. easy.
            ++ intros. subst. cbn in *. easy.
            ++ intros. subst. cbn in *. easy.
-         + subst.
-           destruct Hstep as (t1', Hstep).
+         + destruct Hstep as (t1', Hstep).
            apply term_eqbO_eq in Hstep. cbn.
            rewrite Hstep.
            case_eq t1; intros; try (exists (ITE t1' t2 t3); rewrite term_eqbO_refl; easy).

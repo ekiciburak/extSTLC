@@ -19,7 +19,7 @@ Proof with eauto.
          + intros x Ht1;
            rewrite Ht1 in H;
            contradict H; easy.
-         + intros x tx e Ht1.
+         + intros x v e Ht1.
            rewrite Ht1 in H0.
            case_eq (isvalue t2); intros.
            ++ rewrite H3 in H0.
@@ -28,11 +28,11 @@ Proof with eauto.
               rewrite H4.
               +++ easy.
               +++ rewrite Ht1 in H1. cbn in H1.
-                  case_eq (typecheck (extend nil x tx) e); intros.
+                  case_eq (typecheck (extend nil x v) e); intros.
                   * rewrite H6 in H1.
                     inversion H1. subst. easy.
                   * rewrite H6 in H1. contradict H1; easy.
-              +++ easy.
+              +++ exact H2.
            ++ rewrite H3 in H0.
               specialize (progress t2 U H2); intros.
               destruct H4 as [H4 | H4].
@@ -93,65 +93,65 @@ Proof with eauto.
               specialize (IHt1 t1' (Arrow U T) (conj H1 H4)).
               rewrite IHt1, H2, type_eqb_refl. easy.
          + intros e1 e2 Ht1.
-           rewrite Ht1 in H.
-           cbn in H.
+           rewrite Ht1 in H1.
+           cbn in H1.
            case_eq (typecheck nil e1); intros.
-           ++ rewrite H3 in H.
+           ++ rewrite H3 in H1.
               destruct t.
               case_eq (typecheck nil e2); intros.
-              +++ rewrite H4 in H. destruct t; easy.
-              +++ rewrite H4 in H. contradict H0. easy.
+              +++ rewrite H4 in H1. destruct t; contradict H1; easy.
+              +++ rewrite H4 in H1. contradict H0. easy.
               +++ contradict H. easy.
               +++ contradict H. easy.
-           ++ rewrite H3 in H. contradict H; easy.
+           ++ rewrite H3 in H1. contradict H; easy.
          + intros e1 e2 Ht1.
-           rewrite Ht1 in H.
-           cbn in H.
+           rewrite Ht1 in H1.
+           cbn in H1.
            case_eq (typecheck nil e1); intros.
-           ++ rewrite H3 in H.
+           ++ rewrite H3 in H1.
               destruct t.
               case_eq (typecheck nil e2); intros.
-              +++ rewrite H4 in H. destruct t; easy.
-              +++ rewrite H4 in H. contradict H0. easy.
+              +++ rewrite H4 in H1. destruct t; contradict H1; easy.
+              +++ rewrite H4 in H1. contradict H0. easy.
               +++ contradict H. easy.
               +++ contradict H. easy.
-           ++ rewrite H3 in H. contradict H; easy.
+           ++ rewrite H3 in H1. contradict H; easy.
          + intros e1 e2 Ht1.
-           rewrite Ht1 in H.
-           cbn in H.
+           rewrite Ht1 in H1.
+           cbn in H1.
            case_eq (typecheck nil e1); intros.
-           ++ rewrite H3 in H.
+           ++ rewrite H3 in H1.
               destruct t.
               case_eq (typecheck nil e2); intros.
-              +++ rewrite H4 in H. destruct t; easy.
-              +++ rewrite H4 in H. contradict H0. easy.
+              +++ rewrite H4 in H1. destruct t; contradict H1; easy.
+              +++ rewrite H4 in H1. contradict H0. easy.
               +++ contradict H. easy.
               +++ contradict H. easy.
-           ++ rewrite H3 in H. contradict H; easy.
+           ++ rewrite H3 in H1. contradict H; easy.
          + intros e1 e2 Ht1.
-           rewrite Ht1 in H.
-           cbn in H.
+           rewrite Ht1 in H1.
+           cbn in H1.
            case_eq (typecheck nil e1); intros.
-           ++ rewrite H3 in H.
+           ++ rewrite H3 in H1.
               destruct t.
               case_eq (typecheck nil e2); intros.
-              +++ rewrite H4 in H. destruct t; easy.
-              +++ rewrite H4 in H. contradict H0. easy.
+              +++ rewrite H4 in H1. destruct t; contradict H1; easy.
+              +++ rewrite H4 in H1. contradict H0. easy.
               +++ contradict H. easy.
               +++ contradict H. easy.
-           ++ rewrite H3 in H. contradict H; easy.
+           ++ rewrite H3 in H1. contradict H; easy.
          + intros e1 e2 Ht1.
-           rewrite Ht1 in H.
-           cbn in H.
+           rewrite Ht1 in H1.
+           cbn in H1.
            case_eq (typecheck nil e1); intros.
-           ++ rewrite H3 in H.
+           ++ rewrite H3 in H1.
               destruct t.
               case_eq (typecheck nil e2); intros.
-              +++ rewrite H4 in H. destruct t; easy.
-              +++ rewrite H4 in H. contradict H0. easy.
+              +++ rewrite H4 in H1. destruct t; contradict H1; easy.
+              +++ rewrite H4 in H1. contradict H0. easy.
               +++ contradict H. easy.
               +++ contradict H. easy.
-           ++ rewrite H3 in H. contradict H; easy.
+           ++ rewrite H3 in H1. contradict H; easy.
        - cbn in H0. easy.
        - cbn in H0. easy.
        - cbn in H0.
@@ -172,12 +172,10 @@ Proof with eauto.
            ++ cbn in H1. contradict H1; easy.
            ++ destruct H1 as (t1', H1).
               rewrite H1 in H0.
-              inversion H0.
+              inversion H0. cbn.
               rewrite <- Ht1 in Ha, H1.
               specialize (IHt1 t1' Bool (conj Ha H1)).
-              cbn.
-              rewrite IHt1, Hb, Hc.
-              rewrite !type_eqb_refl. easy.
+              rewrite IHt1, Hb, Hc, !type_eqb_refl. easy.
          + intros n Ht1.
            rewrite Ht1 in Ha. contradict Ha; easy.
          + intros b Ht1.
@@ -291,13 +289,13 @@ Proof with eauto.
          apply fixTyping in H.
          case_eq t.
          + intros. rewrite H1 in H. contradict H; easy.
-         + intros x tx e Ht1.
+         + intros x v e Ht1.
            rewrite Ht1 in H0. inversion H0.
            rewrite Ht1 in H.
            cbn in H.
-           case_eq (typecheck (extend nil x tx) e); intros.
+           case_eq (typecheck (extend nil x v) e); intros.
            ++ rewrite H1 in H.
-              specialize (subst_preserves_typing x e (Fix (Lambda x tx e)) T T nil); intros.
+              specialize (subst_preserves_typing x e (Fix (Lambda x v e)) T T nil); intros.
               rewrite H3.
               +++ easy.
               +++ inversion H. subst. easy.

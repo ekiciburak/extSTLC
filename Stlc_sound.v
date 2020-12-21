@@ -57,23 +57,25 @@ Theorem soundness_R: forall n t t' T,
   typecheck nil t = Some T /\
   evaln t n  = Some t' -> 
   ~ stuck_b t'.
-Proof. intros n. unfold stuck_b.
-       induction n; intros t t' T (H, H0).
-       - unfold not. intros (Hnf, Hnv).
-         specialize (progress t T H); intros.
-         cbn in *. inversion H0. subst.
-         destruct H1. rewrite H1 in Hnv. easy.
-         destruct H1 as (t, Ha).
-         rewrite Ha in Hnf. easy.
-       - unfold not. intros (Hnf, Hnv).
-         unfold step in *.
-         cbn in H0, IHn.
-         case_eq (beta t); intros.
-         rewrite H1 in H0.
-         specialize (preservation t t0 T (conj H H1)); intros.
-         specialize (IHn t0 t' T (conj H2 H0)).
-         apply IHn. split; easy.
-         rewrite H1 in H0. easy.
+Proof. unfold stuck_b, not.
+       intro n.
+       induction n as [| m IHn]; intros t t' T (Ha, Hb) (Hne, Hnv).
+       - cbn in Hb. inversion Hb. rewrite <- H0 in *.
+         specialize (progress t T Ha); intros Hp.
+         destruct Hp as [ Hp | Hp].
+         + rewrite Hp in Hnv. contradict Hnv; easy.
+         + destruct Hp as (t'', Hp).
+           rewrite Hp in Hne. contradict Hne; easy.
+       - cbn in Hb.
+         specialize (progress t T Ha); intros Hp.
+         destruct Hp as [ Hp | Hp].
+         + apply isvalue_beta in Hp.
+           rewrite Hp in Hb. contradict Hb; easy.
+         + destruct Hp as (e, He).
+           rewrite He in Hb.
+           specialize (preservation t e T (conj Ha He)); intros Hte.
+           specialize (IHn e t' T (conj Hte Hb)).
+           apply IHn. split; easy.
 Qed.
 
 Theorem soundness_Q: forall n t T, 
