@@ -1117,7 +1117,8 @@ Qed.
 
 Lemma AppAppE: forall t1 t2 T, 
 typecheck nil (App t1 t2) = Some T ->
-exists U, typecheck nil t1 = Some (Arrow U T).
+exists U, typecheck nil t1 = Some (Arrow U T) ->
+typecheck nil t2 = Some U.
 Proof. intros.
        cbn in H.
        case_eq (typecheck nil t1); intros.
@@ -1134,6 +1135,28 @@ Proof. intros.
          + rewrite H1 in H. destruct t; contradict H; easy. 
        - rewrite H0 in H. contradict H; easy.
 Qed.
+
+Lemma AppAppEa: forall t1 t2 T, 
+typecheck nil (App t1 t2) = Some T ->
+exists U, typecheck nil t1 = Some (Arrow U T) /\
+typecheck nil t2 = Some U.
+Proof. intros.
+       cbn in H.
+       case_eq (typecheck nil t1); intros.
+       - rewrite H0 in H.
+         case_eq (typecheck nil t2); intros.
+         + rewrite H1 in H.
+           destruct t; try (contradict H; easy).
+           case_eq (type_eqb t3 t0); intros.
+           ++ rewrite H2 in H. 
+              inversion H.
+              apply type_eqb_eq in H2.
+              subst. now exists t0.
+           ++ rewrite H2 in H. contradict H; easy.
+         + rewrite H1 in H. destruct t; contradict H; easy. 
+       - rewrite H0 in H. contradict H; easy.
+Qed.
+
 
 Lemma AppAppT: forall t1 t2 T U, 
 typecheck nil (App t1 t2) = Some T ->

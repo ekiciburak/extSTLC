@@ -12,9 +12,8 @@ Proof with eauto.
        - cbn in *. easy.
        - cbn in H0. easy.
        - cbn in H0.
-         specialize (AppAppE t1 t2 T H); intros .
-         destruct H1 as (U, H1).
-         specialize (AppAppT t1 t2 T U H H1); intros.
+         specialize (AppAppEa t1 t2 T H); intros .
+         destruct H1 as (U, (H1, H2)).
          case_eq t1.
          + intros x Ht1;
            rewrite Ht1 in H;
