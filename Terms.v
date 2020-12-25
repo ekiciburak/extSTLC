@@ -63,41 +63,6 @@ Proof. intro t1.
 Defined.
 
 
-Definition type_eqbO (t1 t2: option type): bool :=
-  match t1, t2 with
-    | Some t1, Some t2 => type_eqb t1 t2
-    | None, None => true
-    | _, _ => false
-  end.
-
-Lemma type_eqbO_refl: forall (t: option type),
-  type_eqbO t t = true.
-Proof. intro t.
-       induction t; intros.
-       - unfold type_eqbO.
-         rewrite type_eqb_refl.
-         easy.
-       - easy.
-Defined.
-
-Lemma type_eqb0_eq: forall (t1 t2: option type),
-  type_eqbO t1 t2 = true <-> t1 = t2.
-Proof. intro t1.
-       split.
-       revert t2.
-       induction t1; intros.
-       + case_eq t2; intros.
-         subst. simpl in *.
-         apply type_eqb_eq in H. subst. easy.
-         subst. cbn in *. easy.
-       + cbn in *.
-         case_eq t2; intros.
-         subst. easy.
-         easy.
-       + intro H. subst.
-         rewrite type_eqbO_refl. easy.
-Qed.
-
 Inductive term: Type :=
   | Ident : string -> term
   | Lambda: string -> type -> term -> term
@@ -273,36 +238,6 @@ Proof. intro t1.
          subst. easy.
 Qed.
 
-Definition term_eqbO (t1 t2: option term): bool :=
-  match t1, t2 with
-    | Some t1, Some t2 => term_eqb t1 t2
-    | None, None => true
-    | _, _ => false
-  end.
-
-Lemma term_eqbO_refl: forall t: option term,
-  term_eqbO t t = true.
-Proof. intros.
-       case_eq t; intros.
-       - cbn. rewrite term_eqb_refl. easy.
-       - easy.
-Defined.
-
-
-Lemma term_eqbO_eq: forall t1 t2: option term,
-  term_eqbO t1 t2 = true -> t1 = t2.
-Proof. intro t1.
-       induction t1; intros.
-       - cbn in H. case_eq t2; intros.
-         + rewrite H0 in H.
-           apply term_eqb_eq in H.
-           subst. easy.
-         + rewrite H0 in H. easy.
-       - cbn in *. case_eq t2; intros.
-         + rewrite H0 in H. easy.
-         + easy.
-Qed.
-
 Fixpoint fv_e (e: term) (l: list string): list string :=
   match e with
     | Ident s         => s :: l
@@ -319,16 +254,6 @@ Fixpoint fv_e (e: term) (l: list string): list string :=
   end.
 
 Definition fv (e: term) := fv_e e nil.
-
-Lemma In0: forall (x: string) (t: term) (T: type),
- not (List.In x (fv (Lambda x T t))).
-Proof. intros.
-       unfold not. intros.
-       cbn in H. rewrite List.filter_In in H.
-       destruct H.
-       rewrite String.eqb_refl in H0.
-       easy.
-Qed.
 
 Fixpoint subst (e: term) (x: string) (n: term): term :=
   match e with
@@ -347,7 +272,7 @@ Fixpoint subst (e: term) (x: string) (n: term): term :=
     | _            => e
   end.
 
-Lemma find0: forall t x s T, 
+Lemma find_lam_fv: forall t x s T, 
   find x (fv t) = true -> 
   (s =? x) = false ->
   find x (fv (Lambda s T t)) = true.
@@ -360,6 +285,7 @@ Proof. intros.
        + easy.
        + rewrite String.eqb_sym. rewrite H0. easy.
 Qed.
+
 
 Lemma uh_diff: forall l x a b,
 List.In x (unique_help l a) ->
@@ -383,8 +309,6 @@ Proof. intro l.
          cbn. right.
          apply (IHl x a0 b). easy. easy.
 Qed.
-
-
 
 Lemma not_uh: forall l x a,
   ~ List.In x l ->

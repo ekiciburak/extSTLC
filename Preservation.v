@@ -12,150 +12,150 @@ Proof with eauto.
        - cbn in *. easy.
        - cbn in H0. easy.
        - cbn in H0.
-         specialize (AppAppEa t1 t2 T H); intros .
-         destruct H1 as (U, (H1, H2)).
+         apply istypechecked_app in H.
+         destruct H as (U, (H1, H2)).
          case_eq t1.
          + intros x Ht1;
-           rewrite Ht1 in H;
-           contradict H; easy.
+           rewrite Ht1 in H0;
+           contradict H0; easy.
          + intros x v e Ht1.
            rewrite Ht1 in H0.
            case_eq (isvalue t2); intros.
-           ++ rewrite H3 in H0.
+           ++ rewrite H in H0.
               inversion H0.
-              specialize (subst_preserves_typing x e t2 T U nil); intros.
-              rewrite H4.
+              specialize (subst_preserves_typing e t2 x T U nil); intros.
+              rewrite H3.
               +++ easy.
               +++ rewrite Ht1 in H1. cbn in H1.
                   case_eq (typecheck (extend nil x v) e); intros.
-                  * rewrite H6 in H1.
+                  * rewrite H5 in H1.
                     inversion H1. subst. easy.
-                  * rewrite H6 in H1. contradict H1; easy.
+                  * rewrite H5 in H1. contradict H1; easy.
               +++ exact H2.
-           ++ rewrite H3 in H0.
+           ++ rewrite H in H0.
               specialize (progress t2 U H2); intros.
-              destruct H4 as [H4 | H4].
-              +++ rewrite H3 in H4. contradict H4; easy.
-              +++ destruct H4 as (t2', H4).
-                  rewrite H4 in H0.
+              destruct H3 as [H3 | H3].
+              +++ rewrite H in H3. contradict H3; easy.
+              +++ destruct H3 as (t2', H3).
+                  rewrite H3 in H0.
                   inversion H0. cbn.
                   rewrite Ht1 in H1.
                   cbn in H1. rewrite H1.
-                  specialize (IHt2 t2' U (conj H2 H4)).
+                  specialize (IHt2 t2' U (conj H2 H3)).
                   rewrite IHt2, type_eqb_refl. easy.
          + intros e1 e2 Ht1.
            rewrite Ht1 in H0.
            assert (isvalue (App e1 e2) = false) by easy.
-           rewrite H3 in H0.
+           rewrite H in H0.
            specialize (progress t1 (Arrow U T) H1); intros.
-           destruct H4 as [ H4 | H4 ].
-           ++ rewrite Ht1 in H4. rewrite H3 in H4. contradict H4; easy.
-           ++ destruct H4 as (t1', H4).
+           destruct H3 as [ H3 | H3 ].
+           ++ rewrite Ht1 in H3. rewrite H in H3. contradict H3; easy.
+           ++ destruct H3 as (t1', H3).
               rewrite <- Ht1 in H0.
-              rewrite H4 in H0.
+              rewrite H3 in H0.
               inversion H0.
-              rewrite <- Ht1 in H3. cbn.
-              specialize (IHt1 t1' (Arrow U T) (conj H1 H4)).
+              rewrite <- Ht1 in H. cbn.
+              specialize (IHt1 t1' (Arrow U T) (conj H1 H3)).
               rewrite IHt1, H2, type_eqb_refl. easy.
          + intros n Ht1.
-           rewrite Ht1 in H.
-           cbn in H. inversion H; easy.
+           rewrite Ht1 in H1.
+           cbn in H1. inversion H1; easy.
          + intros n Ht1.
-           rewrite Ht1 in H.
-           cbn in H. inversion H; easy.
+           rewrite Ht1 in H1.
+           cbn in H1. inversion H1; easy.
          + intros e1 e2 e3 Ht1.
            rewrite Ht1 in H0.
            assert (isvalue (ITE e1 e2 e3) = false) by easy.
-           rewrite H3 in H0.
+           rewrite H in H0.
            specialize (progress t1 (Arrow U T) H1); intros.
-           destruct H4 as [ H4 | H4 ].
-           ++ rewrite Ht1 in H4. rewrite H3 in H4. contradict H4; easy.
-           ++ destruct H4 as (e1', H4).
+           destruct H3 as [ H3 | H3 ].
+           ++ rewrite Ht1 in H3. rewrite H in H3. contradict H3; easy.
+           ++ destruct H3 as (e1', H3).
               rewrite <- Ht1 in H0.
-              rewrite H4 in H0.
+              rewrite H3 in H0.
               inversion H0.
-              rewrite <- Ht1 in H3. cbn.
-              specialize (IHt1 e1' (Arrow U T) (conj H1 H4)).
+              rewrite <- Ht1 in H. cbn.
+              specialize (IHt1 e1' (Arrow U T) (conj H1 H3)).
               rewrite IHt1, H2, type_eqb_refl. easy.
          + intros e1 Ht1.
            rewrite Ht1 in H0.
            assert (isvalue (Fix e1) = false) by easy.
-           rewrite H3 in H0.
+           rewrite H in H0.
            specialize (progress t1 (Arrow U T) H1); intros.
-           destruct H4 as [ H4 | H4].
-           ++ rewrite Ht1 in H4. rewrite H3 in H4. contradict H4; easy.
-           ++ destruct H4 as (t1', H4).
+           destruct H3 as [ H3 | H3 ].
+           ++ rewrite Ht1 in H3. rewrite H in H3. contradict H3; easy.
+           ++ destruct H3 as (t1', H3).
               rewrite <- Ht1 in H0.
-              rewrite H4 in H0.
+              rewrite H3 in H0.
               inversion H0.
-              rewrite <- Ht1 in H3. cbn.
-              specialize (IHt1 t1' (Arrow U T) (conj H1 H4)).
+              rewrite <- Ht1 in H. cbn.
+              specialize (IHt1 t1' (Arrow U T) (conj H1 H3)).
               rewrite IHt1, H2, type_eqb_refl. easy.
          + intros e1 e2 Ht1.
            rewrite Ht1 in H1.
            cbn in H1.
            case_eq (typecheck nil e1); intros.
-           ++ rewrite H3 in H1.
+           ++ rewrite H in H1.
               destruct t.
               case_eq (typecheck nil e2); intros.
-              +++ rewrite H4 in H1. destruct t; contradict H1; easy.
-              +++ rewrite H4 in H1. contradict H0. easy.
+              +++ rewrite H3 in H1. destruct t; contradict H1; easy.
+              +++ rewrite H3 in H1. contradict H0. easy.
               +++ contradict H. easy.
               +++ contradict H. easy.
-           ++ rewrite H3 in H1. contradict H; easy.
+           ++ rewrite H in H1. contradict H; easy.
          + intros e1 e2 Ht1.
            rewrite Ht1 in H1.
            cbn in H1.
            case_eq (typecheck nil e1); intros.
-           ++ rewrite H3 in H1.
+           ++ rewrite H in H1.
               destruct t.
               case_eq (typecheck nil e2); intros.
-              +++ rewrite H4 in H1. destruct t; contradict H1; easy.
-              +++ rewrite H4 in H1. contradict H0. easy.
+              +++ rewrite H3 in H1. destruct t; contradict H1; easy.
+              +++ rewrite H3 in H1. contradict H0. easy.
               +++ contradict H. easy.
               +++ contradict H. easy.
-           ++ rewrite H3 in H1. contradict H; easy.
+           ++ rewrite H in H1. contradict H; easy.
          + intros e1 e2 Ht1.
            rewrite Ht1 in H1.
            cbn in H1.
            case_eq (typecheck nil e1); intros.
-           ++ rewrite H3 in H1.
+           ++ rewrite H in H1.
               destruct t.
               case_eq (typecheck nil e2); intros.
-              +++ rewrite H4 in H1. destruct t; contradict H1; easy.
-              +++ rewrite H4 in H1. contradict H0. easy.
+              +++ rewrite H3 in H1. destruct t; contradict H1; easy.
+              +++ rewrite H3 in H1. contradict H0. easy.
               +++ contradict H. easy.
               +++ contradict H. easy.
-           ++ rewrite H3 in H1. contradict H; easy.
+           ++ rewrite H in H1. contradict H; easy.
          + intros e1 e2 Ht1.
            rewrite Ht1 in H1.
            cbn in H1.
            case_eq (typecheck nil e1); intros.
-           ++ rewrite H3 in H1.
+           ++ rewrite H in H1.
               destruct t.
               case_eq (typecheck nil e2); intros.
-              +++ rewrite H4 in H1. destruct t; contradict H1; easy.
-              +++ rewrite H4 in H1. contradict H0. easy.
+              +++ rewrite H3 in H1. destruct t; contradict H1; easy.
+              +++ rewrite H3 in H1. contradict H0. easy.
               +++ contradict H. easy.
               +++ contradict H. easy.
-           ++ rewrite H3 in H1. contradict H; easy.
+           ++ rewrite H in H1. contradict H; easy.
          + intros e1 e2 Ht1.
            rewrite Ht1 in H1.
            cbn in H1.
            case_eq (typecheck nil e1); intros.
-           ++ rewrite H3 in H1.
+           ++ rewrite H in H1.
               destruct t.
               case_eq (typecheck nil e2); intros.
-              +++ rewrite H4 in H1. destruct t; contradict H1; easy.
-              +++ rewrite H4 in H1. contradict H0. easy.
+              +++ rewrite H3 in H1. destruct t; contradict H1; easy.
+              +++ rewrite H3 in H1. contradict H0. easy.
               +++ contradict H. easy.
               +++ contradict H. easy.
-           ++ rewrite H3 in H1. contradict H; easy.
+           ++ rewrite H in H1. contradict H1; easy.
        - cbn in H0. easy.
        - cbn in H0. easy.
        - cbn in H0.
          pose proof H as HH.
-         apply istypechecked_ite2 in H.
+         apply istypechecked_ite in H.
          destruct H as (Ha, (Hb, Hc)).
          case_eq t1.
          + intros. rewrite H in Ha. contradict Ha; easy.
@@ -285,7 +285,7 @@ Proof with eauto.
               rewrite !type_eqb_refl. easy.
        - cbn in H0.
          pose proof H as Ha.
-         apply fixTyping in H.
+         apply istypechecked_fix in H.
          case_eq t.
          + intros. rewrite H1 in H. contradict H; easy.
          + intros x v e Ht1.
@@ -294,7 +294,7 @@ Proof with eauto.
            cbn in H.
            case_eq (typecheck (extend nil x v) e); intros.
            ++ rewrite H1 in H.
-              specialize (subst_preserves_typing x e (Fix (Lambda x v e)) T T nil); intros.
+              specialize (subst_preserves_typing e (Fix (Lambda x v e)) x T T nil); intros.
               rewrite H3.
               +++ easy.
               +++ inversion H. subst. easy.
@@ -401,7 +401,7 @@ Proof with eauto.
            contradict H; easy.
            contradict H; easy.
            contradict H; easy.
-       - apply istypechecked_plus3 in H.
+       - apply istypechecked_plus in H.
          destruct H as (Ha, (Hb, Hc)).
          cbn in H0.
          case_eq t1.
@@ -595,7 +595,7 @@ Proof with eauto.
               cbn.
               specialize (IHt1 t1' Int (conj Ha H1)).
               rewrite IHt1, Hb, Hc. easy.
-       - apply istypechecked_plus3 in H.
+       - apply istypechecked_minus in H.
          destruct H as (Ha, (Hb, Hc)).
          cbn in H0.
          case_eq t1.
@@ -789,7 +789,7 @@ Proof with eauto.
               cbn.
               specialize (IHt1 t1' Int (conj Ha H1)).
               rewrite IHt1, Hb, Hc. easy.
-       - apply istypechecked_plus3 in H.
+       - apply istypechecked_mult in H.
          destruct H as (Ha, (Hb, Hc)).
          cbn in H0.
          case_eq t1.
@@ -983,7 +983,7 @@ Proof with eauto.
               cbn.
               specialize (IHt1 t1' Int (conj Ha H1)).
               rewrite IHt1, Hb, Hc. easy.
-       - apply istypechecked_eq3 in H.
+       - apply istypechecked_eq in H.
          destruct H as (Ha, (Hb, Hc)).
          cbn in H0.
          case_eq t1.
@@ -1177,7 +1177,7 @@ Proof with eauto.
               cbn.
               specialize (IHt1 t1' Int (conj Ha H1)).
               rewrite IHt1, Hb, Hc. easy.
-       - apply istypechecked_eq3 in H.
+       - apply istypechecked_gt in H.
          destruct H as (Ha, (Hb, Hc)).
          cbn in H0.
          case_eq t1.
