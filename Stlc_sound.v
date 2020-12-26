@@ -12,20 +12,21 @@ Theorem soundness: forall n t t' T,
 Proof. unfold stuck, not.
        intro n.
        induction n as [| m IHn]; intros t t' T (Ha, Hb) (Hne, Hnv).
-       - cbn in Hb. inversion Hb. rewrite <- H0 in *.
-         specialize (progress t T Ha); intros Hp. (* Theorem 3.1 *)
+       - cbn in Hb.  (* 1 *)
+         inversion Hb. rewrite <- H0 in *. 
+         specialize (progress t T Ha); intros Hp.  (* Theorem 3.1 *)
          destruct Hp as [ Hp | Hp].
          + rewrite Hp in Hnv. contradict Hnv; easy.
          + destruct Hp as (t'', Hp).
            rewrite Hp in Hne. contradict Hne; easy.
-       - cbn in Hb.
-         specialize (progress t T Ha); intros Hp. (* Theorem 3.1 *)
+       - cbn in Hb. (* 2 *)
+         specialize (progress t T Ha); intros Hp.  (* Theorem 3.1 *)
          destruct Hp as [ Hp | Hp].
-         + apply isvalue_beta in Hp.
+         + apply isvalue_beta in Hp.  (* 2-bullet_1 *)
            rewrite Hp in Hb. contradict Hb; easy.
-         + destruct Hp as (e, He).
+         + destruct Hp as (e, He).    (* 2-bullet_2 *)
            rewrite He in Hb.
-           specialize (preservation t e T (conj Ha He)); intros Hte. (* Theorem 3.2 *)
+           specialize (preservation t e T (conj Ha He)); intros Hte.  (* Theorem 3.2 *)
            specialize (IHn e t' T (conj Hte Hb)).
            apply IHn. split; easy.
 Qed.
