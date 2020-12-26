@@ -686,4 +686,18 @@ Proof. intro t.
         + rewrite H in Ha. easy.
 Qed.
 
+
+Definition factorial := 
+                Lambda "f" (Arrow Int Int)
+                 (Lambda "x" Int 
+                   (ITE (Gt (Ident "x") (NVal 1)) 
+                        (Mult (Ident "x") (App (Ident "f") (Minus (Ident "x") (NVal 1))))
+                        (NVal 1))
+                  ).
+
+Compute (typecheck nil (Fix factorial)).
+
+Compute (typecheck nil (App (NVal 5) (ITE (NVal 3) (NVal 5) (NVal 10)))).
+
+
    

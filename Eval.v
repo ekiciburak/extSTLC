@@ -111,16 +111,6 @@ Fixpoint beta (e: term): option term :=
 Lemma isvalue_beta: forall t: term, isvalue t = true -> beta t = None.
 Proof. intro t; induction t; intros; easy. Qed.
 
-Definition factorial := 
-                Lambda "f" (Arrow Int (Arrow Int Int)) 
-                 (Lambda "x" Int 
-                   (Lambda "y" Int
-                   (ITE (Gt (Ident "x") (NVal 1)) 
-                        (Plus (Mult (Ident "x") (App (App (Ident "f") (Minus (Ident "x") (NVal 1))) (Ident "y"))) (Ident "y"))
-                        (NVal 1))) 
-                  ).
-
-Definition f := App (App (Fix factorial) (NVal 7)) (NVal 2).
 
 Fixpoint evaln (t: term) (n: nat): option term :=
   match n with
@@ -132,9 +122,9 @@ Fixpoint evaln (t: term) (n: nat): option term :=
              end
   end.
 
-Eval compute in evaln f 53.
+Compute (evaln (App (Fix factorial) (NVal 7)) 40).
 
-Eval compute in evaln (App (NVal 5) (ITE (NVal 3) (NVal 5) (NVal 10))) 1.
+Compute (beta (App (NVal 5) (ITE (NVal 3) (NVal 5) (NVal 10)))).
 
 
 

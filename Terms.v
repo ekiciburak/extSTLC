@@ -242,9 +242,9 @@ Fixpoint fv_e (e: term) (l: list string): list string :=
   match e with
     | Ident s         => s :: l
     | Lambda x t e1   => List.filter (fun a => negb (eqb a x)) (fv_e e1 l)
-    | Fix f           => fv_e f l
     | App t r         => unique (fv_e t l ++ fv_e r l)
     | ITE t1 t2 t3    => unique (fv_e t1 l ++ fv_e t2 l ++ fv_e t3 l)
+    | Fix f           => fv_e f l
     | Plus t1 t2      => unique (fv_e t1 l ++ fv_e t2 l)
     | Minus t1 t2     => unique (fv_e t1 l ++ fv_e t2 l)
     | Mult t1 t2      => unique (fv_e t1 l ++ fv_e t2 l)
@@ -261,9 +261,9 @@ Fixpoint subst (e: term) (x: string) (n: term): term :=
     | Lambda y t m => if (Bool.eqb (String.eqb y x) false)
                       then Lambda y t (subst m x n) 
                       else e
-    | Fix f        => Fix (subst f x n)
     | App t r      => App (subst t x n) (subst r x n)
     | ITE t1 t2 t3 => ITE (subst t1 x n) (subst t2 x n) (subst t3 x n)
+    | Fix f        => Fix (subst f x n)
     | Plus a b     => Plus (subst a x n) (subst b x n)
     | Minus a b    => Minus (subst a x n) (subst b x n)
     | Mult a b     => Mult (subst a x n) (subst b x n)
