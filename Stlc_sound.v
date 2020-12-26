@@ -13,19 +13,19 @@ Proof. unfold stuck, not.
        intro n.
        induction n as [| m IHn]; intros t t' T (Ha, Hb) (Hne, Hnv).
        - cbn in Hb. inversion Hb. rewrite <- H0 in *.
-         specialize (progress t T Ha); intros Hp.
+         specialize (progress t T Ha); intros Hp. (* Theorem 3.1 *)
          destruct Hp as [ Hp | Hp].
          + rewrite Hp in Hnv. contradict Hnv; easy.
          + destruct Hp as (t'', Hp).
            rewrite Hp in Hne. contradict Hne; easy.
        - cbn in Hb.
-         specialize (progress t T Ha); intros Hp.
+         specialize (progress t T Ha); intros Hp. (* Theorem 3.1 *)
          destruct Hp as [ Hp | Hp].
          + apply isvalue_beta in Hp.
            rewrite Hp in Hb. contradict Hb; easy.
          + destruct Hp as (e, He).
            rewrite He in Hb.
-           specialize (preservation t e T (conj Ha He)); intros Hte.
+           specialize (preservation t e T (conj Ha He)); intros Hte. (* Theorem 3.2 *)
            specialize (IHn e t' T (conj Hte Hb)).
            apply IHn. split; easy.
 Qed.
