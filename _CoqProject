@@ -5,7 +5,7 @@ Typecheck.v
 Eval.v
 Progress.v
 Preservation.v
-Stlc_sound.v
+Soundness.v
 
 
 -Q . SFL
