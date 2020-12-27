@@ -410,8 +410,8 @@ Qed.
 
 Lemma subst_eq: forall t v x T, 
 (subst (Lambda x T t) x v) = (Lambda x T t).
-Proof. intros.
-       induction t; intros; simpl; rewrite String.eqb_refl; simpl; easy.
+Proof. intros. cbn.
+       rewrite String.eqb_refl. cbn. easy.
 Qed.
 
 Lemma fv_neq: forall t x y T,
@@ -577,8 +577,8 @@ Proof. intro t.
          + rewrite String.eqb_eq in H.
            rewrite H in *.
            rewrite subst_eq.
-           specialize (context_invariance ((x, U) :: G) G (Lambda x t t0)); intros. 
-           apply H0. easy.
+           specialize (context_invariance ((x, U) :: G) G (Lambda x t t0) T Ha); intros. 
+           apply H0.
            intros y Hy.
            apply fv_neq in Hy. cbn.
            rewrite Hy. easy.
