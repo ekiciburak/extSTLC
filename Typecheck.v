@@ -408,12 +408,6 @@ Proof. intros G K t.
          + rewrite H1 in H. easy.
 Qed.
 
-Lemma subst_eq: forall t v x T, 
-(subst (Lambda x T t) x v) = (Lambda x T t).
-Proof. intros. cbn.
-       rewrite String.eqb_refl. cbn. easy.
-Qed.
-
 Lemma fv_neq: forall t x y T,
   find y (fv (Lambda x T t)) = true -> String.eqb x y = false.
 Proof. intros.
@@ -576,7 +570,9 @@ Proof. intro t.
        - case_eq (s =? x); intros.
          + rewrite String.eqb_eq in H.
            rewrite H in *.
-           rewrite subst_eq.
+           assert (seq: subst (Lambda x t t0) x v = (Lambda x t t0) ).
+           { cbn. rewrite String.eqb_refl. cbn. easy. } 
+           rewrite seq.
            specialize (context_invariance ((x, U) :: G) G (Lambda x t t0) T Ha); intros. 
            apply H0.
            intros y Hy.
